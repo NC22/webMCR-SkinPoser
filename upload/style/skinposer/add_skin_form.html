@@ -1,0 +1,48 @@
+<div style="padding: 12px;">
+
+    <div class="block-header">
+	
+	Добавить образ 	<img id="skin-loader" src="<?php echo STYLE_URL ?>img/load.gif" width="16" height="16" alt="Загрузка" style="display: none; margin-bottom: 6px;"/>
+		
+	
+	</div>
+	
+	<div class="block-line"></div>    
+	
+	<form class="form-inline" id="upload-skin" method="post" action="index.php" enctype="multipart/form-data" >
+			
+		<input type="hidden" name="do" value="add" />
+		<input type="hidden" name="mode" value="skinposer" />			
+		
+		<span class="help-block">
+		
+			Разрешение для графического файла: до <?php echo $max_ratio_text ?>. Размер файла: до <?php echo $max_fsize ?> Кб.
+			
+		</span> 
+		
+
+		<select name="skin_gender" class="input-medium">
+		
+			<option value="2">Для всех</option>
+			<option value="1">Для девочек</option>
+			<option value="0">Для мальчиков</option>
+			
+		</select>
+		
+		<input id="uplskin" type="file" name="skin_upload" onchange="uploadSkin()" title="Выбрать файл..." /> 
+		
+		<?php if ($user->group() == 3) { ?>
+		
+			<label class="checkbox">	
+			
+				<input type="checkbox" name="skin_check" value="1"> Игнорировать блэк лист	
+				
+			</label>	
+		
+		<?php } ?>
+		
+	</form>
+	
+	<div id="mBoxUpl" class="alert alert-error" style="display: none;" ></div>
+	
+</div>

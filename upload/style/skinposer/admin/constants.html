@@ -1,0 +1,40 @@
+<form action="index.php?mode=control&amp;do=constants" method="post">
+	
+	<div class="tabbable" style="margin-top: 12px; padding: 10px;">
+
+    <ul class="nav nav-tabs">
+	
+		<li class="active"><a href="#tab1" data-toggle="tab">Параметры</a></li>
+		<li><a href="#tab2" data-toggle="tab">База данных</a></li>
+    </ul>
+	
+    <div class="tab-content">
+	
+		<div class="tab-pane active" id="tab1">
+			
+			<label class="checkbox">
+			  <input type="checkbox" name="site_offline" value="1" <?php echo (!$config['skinposer'])?'checked="checked"':'' ?>> Выключить сервис
+			</label>
+
+			<div class="alert alert-info">
+			Доступ к сервису SkinPoser будет полностью закрыт
+			</div>
+
+		</div>
+		
+		<div class="tab-pane" id="tab2">
+	
+			<label>Пользователь skins:</label>
+			<input type="text" name="bd_skins" value="<?php echo $bd_names['skins'] ?>">
+	
+			<label>Таблица bad_skins:</label>
+			<input type="text" name="bd_bad_skins" value="<?php echo $bd_names['bad_skins'] ?>">
+		</div>
+		
+    </div>
+	
+	<button type="submit" class="btn">Применить</button>
+	
+	</div>	
+	
+</form>
