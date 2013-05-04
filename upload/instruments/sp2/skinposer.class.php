@@ -295,7 +295,7 @@ private $downloads;
 		if (file_exists($preview_way)) unlink($preview_way);
 		
 		BD("DELETE FROM `{$this->db}` WHERE `id`='".$this->id."'");	
-		BD("DELETE FROM `{$this->db_likes} ` WHERE `item_id`='".$this->id."' AND `item_type`='1'");
+		BD("DELETE FROM `{$this->db_likes} ` WHERE `item_id`='".$this->id."' AND `item_type`='".ItemType::Skin."'");
 		
 		BD("LOCK TABLES `{$this->db_ratio}` WRITE;");
 		BD("UPDATE `{$this->db_ratio}` SET `num` = num - 1 WHERE `ratio`='".$this->ratio."'");

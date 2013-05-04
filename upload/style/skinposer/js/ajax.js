@@ -12,6 +12,20 @@ function ApplyForm(id) {
 	GetById('vform').style.top =  margin + 'px' 
 }
 
+function DeleteSkin(id) {
+
+	if (!confirm("Уверены, что хотите удалить файл?")) return false
+
+	var event = function(response) {
+	
+		if ( response['code'] == 0 ) document.location.reload(true)
+		else alert(response['code'] + ' ' + response['message'])		
+	}
+
+	SendByXmlHttp('index.php', 'mode=skinposer&do=del&skin_id=' + encodeURIComponent(id), event)
+	return false
+}
+
 function ApplySkin() {
 
 	var code  = GetById('vform-key').value	

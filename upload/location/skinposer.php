@@ -21,6 +21,17 @@ if ((!empty($_POST['do']) or !empty($_GET['do'])) and !empty($user)) {
 	$do = ($_POST['do'])? $_POST['do'] : $_GET['do'];
 
 	switch ($do) {
+		case 'del':
+		
+			if (empty($_POST['skin_id'])) aExit(1);	
+			
+			$skin_id = (int) $_POST['skin_id'];
+			$sp_item = new SPItem($skin_id);
+			
+			if ($sp_item->Delete()) aExit(0);
+			else aExit(2);
+			 
+		break;	
 		case 'get':
 		
 			if (empty($_POST['skin_id'])) aExit(1);	
