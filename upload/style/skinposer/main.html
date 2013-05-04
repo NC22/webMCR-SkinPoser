@@ -34,17 +34,17 @@
 
 		<div class="mBoxLowRes" style="width: 220px;">
 			<form method="post" action="action.php">
-			<input type="hidden" id="vform-skin" name="skin" value="-1" />
+				<input type="hidden" id="vform-skin" name="skin" value="-1" />
+					
+				<legend>Изменить скин</legend>
 				
-			<legend>Изменить скин</legend>
-			
-			<label>Код подтверждения:</label>
-			<img id="vform-validator" src="instruments/captcha/captcha.php" alt="Код подтверждения" class="img-polaroid" width="70" height="30"/> <input type="text" maxlength="4" id="vform-key" name="key" />
-			
-			<p>		
-				<input type="button" class="btn" style="margin-top:10px;" value="Изменить" onclick="ApplySkin(); return false "/>
-				<input type="button" class="btn" style="margin-top:10px;" value="Отмена" onclick="BlockVisible('vform',false); return false "/>
-			</p>
+				<label>Код подтверждения:</label>
+				<img id="vform-validator" src="<?php echo STYLE_URL ?>img/load.gif" alt="Код подтверждения" class="img-polaroid" width="16" height="16"/> <input type="text" maxlength="4" id="vform-key" name="key" />
+				
+				<p>		
+					<input type="button" class="btn" style="margin-top:10px;" value="Изменить" onclick="ApplySkin(); return false "/>
+					<input type="button" class="btn" style="margin-top:10px;" value="Отмена" onclick="BlockVisible('vform',false); return false "/>
+				</p>
 			</form>
 		</div>
 

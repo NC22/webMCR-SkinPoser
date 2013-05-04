@@ -29,8 +29,8 @@ private $downloads;
 	public function SPItem($id = false, $style = false) {
 	global $bd_names, $site_ways;	
 		
-		$this->base_dir		= MCRAFT.'sp_skins/'; 
-		$this->base_url		= $site_ways['mcraft'].'sp_skins/';
+		$this->base_dir		= MCR_ROOT.'instruments/sp2/skins/'; 
+		$this->base_url		= 'instruments/sp2/skins/';
 		$this->base_name	= 'sp_nc';
 		
 		$this->db    		= $bd_names['skins'];
@@ -174,10 +174,11 @@ private $downloads;
 	}
 	
 	public function ApplayToUser($user_id) {
+	global $bd_users;
 	
 	if (!$this->Exist()) return false;
 	
-	$work_user = new User($user_id);
+	$work_user = new User($user_id, $bd_users['id']);
 	if (!$work_user->id()) return false;
 	
 	$female = $work_user->isFemale();
@@ -186,13 +187,7 @@ private $downloads;
 	
 	if ($work_user->getPermission('max_ratio') < $this->ratio) return false;
 	
-	$work_user->deleteSkin();
-	
-	if ( !strcmp($work_user->defaultSkinMD5(), md5_file($work_user->getSkinFName())) ) 
-		$work_user->defaultSkinTrigger(true);
-	else
-		$work_user->defaultSkinTrigger(false); 			 
-		
+	$work_user->deleteSkin();		
 	$work_user->deleteBuffer();
 		
 	$user_skin_way = $work_user->getSkinFName(); 
@@ -200,6 +195,12 @@ private $downloads;
 	if (copy($this->base_dir.$this->fname, $user_skin_way)) chmod($user_skin_way , 0777);
 	else return false;
 	
+	if ( !strcmp($work_user->defaultSkinMD5(), md5_file($work_user->getSkinFName())) ) 
+		$work_user->defaultSkinTrigger(true);
+	else
+		$work_user->defaultSkinTrigger(false);	
+		
+	return true;		
 	}
 	
 	public function isFemaleSkin() {

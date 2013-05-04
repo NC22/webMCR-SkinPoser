@@ -2,14 +2,14 @@ function ApplyForm(id) {
 	
 	BlockVisible('vform',true)
 	
-	document.getElementById('vform-skin').value = id
-	document.getElementById('vform-validator').src = '../instruments/captcha/captcha.php?refresh=' + rand(1337,31337)
+	GetById('vform-skin').value = id
+	var img = GetById('vform-validator')
+
+	img.src = base_url + 'instruments/captcha/captcha.php?refresh=' + rand(1337,31337)
+	img.onload = function(){img.width = 70; img.height = 30}
 	
-	var height = document.compatMode=='CSS1Compat' && document.documentElement.clientHeight;
-	var scroll = document.body.scrollTop
-	if (!isNaN(document.documentElement.scrollTop)) 
-	scroll = document.documentElement.scrollTop + document.body.scrollTop
-    document.getElementById('vform').style.top =  scroll + (height / 2) +'px'	
+	var margin = Math.round(GetScrollTop() + (getClientH()/2) - (260/2))				
+	GetById('vform').style.top =  margin + 'px' 
 }
 
 function ApplySkin() {
@@ -21,14 +21,14 @@ function ApplySkin() {
 	
 	var event = function(response) {
 
-		if ( response['code'] == 2 ) GetById('vformBox').style.backgroundColor = '#b9e37d'
-		else { document.location.reload(true); return false; }
-	
-		GetById('vformBox').innerHTML = rText
+		if ( response['code'] == 0 ) { document.location.reload(true); return false; }
+		
+		GetById('vform-validator').src = base_url + 'instruments/captcha/captcha.php?refresh=' + rand(1337,31337)
+		GetById('vformBox').innerHTML = response['message']
 		BlockVisible('vformBox',true)	
 	}
 
-	SendByXmlHttp('index.php', 'mode=skinposer&do=get&skin_id=' + encodeURIComponent(skin) + code, event)
+	SendByXmlHttp('index.php', 'mode=skinposer&do=get&skin_id=' + encodeURIComponent(skin) + '&antibot=' + code, event)
 	return false
 }
 

@@ -22,10 +22,9 @@ if ((!empty($_POST['do']) or !empty($_GET['do'])) and !empty($user)) {
 
 	switch ($do) {
 		case 'get':
-			
-			CaptchaCheck(2);
-			
-			if (empty($_POST['skin'])) aExit(1);	 
+		
+			if (empty($_POST['skin_id'])) aExit(1);	
+			CaptchaCheck(2);			 
 			
 			$skin_id = (int) $_POST['skin_id'];
 			$sp_item = new SPItem($skin_id);
