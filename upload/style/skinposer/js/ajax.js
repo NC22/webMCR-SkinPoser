@@ -61,7 +61,9 @@ function uploadSkin() {
 
             if (response['code'] == 0) { 
 			
-			document.location.href = base_url + 'index.php?mode=skinposer&ratio=' + response['ratio']			
+				if (response['gender'] < 2) response['gender'] += 3 			
+			
+			document.location.href = base_url + 'index.php?mode=skinposer&ratio=' + response['ratio'] + '&type=' + response['gender']				
 			return false			
 			}
 			GetById('mBoxUpl').innerHTML = nl2br(response['message'])

@@ -12,7 +12,7 @@ $max_fsize = $user->getPermission('max_fsize');
 
 }
 
-require(MCR_ROOT.'instruments/sp2/skinposer.class.php');
+require(MCR_ROOT.'instruments/skinposer.class.php');
 
 if ((!empty($_POST['do']) or !empty($_GET['do'])) and !empty($user)) {
 	
