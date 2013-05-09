@@ -328,7 +328,7 @@ private $db_ratio;
 		parent::Menager($this->style);		
 	}
 	
-	public function ShowSortTypeSelector() {
+	public function ShowSortTypeSelector($order_by = 'id', $sort = 1) {
 
 		ob_start(); 
 		include $this->style.'skinposer/sort.html'; 

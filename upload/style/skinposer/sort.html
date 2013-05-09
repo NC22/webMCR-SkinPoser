@@ -6,15 +6,17 @@
 			
 			Сортировка:
 			
-			<select name="sort" size="1" class="input-large">
-					<option value="1" selected="selected">По порядку добавления</option>
-					<option value="2">По рейтингу</option>
+			<select name="method" size="1" class="input-large">
+					<option value="1" <?php echo ($order_by == 'id')? 'selected="selected"' : ''; ?>>По порядку добавления</option>
+					<option value="2" <?php echo ($order_by == 'likes')? 'selected="selected"' : ''; ?>>По рейтингу</option>
 			</select>
 			<select name="sort" size="1" class="input-large">
-					<option value="1" selected="selected">По возрастанию</option>
-					<option value="2">По убыванию</option>
+					<option value="1" <?php echo ($sort == 1)? 'selected="selected"' : ''; ?>>По возрастанию</option>
+					<option value="2" <?php echo ($sort == 2)? 'selected="selected"' : ''; ?>>По убыванию</option>
 			</select>	
-		
+			
+			<input name="skins_per_page" class="input-mini" type="text" placeholder="Кол-во:" />
+			
 			<input id="hd-button" type="submit" class="btn" value="Изменить" />
 			
 		</form>

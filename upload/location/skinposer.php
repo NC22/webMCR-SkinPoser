@@ -137,5 +137,5 @@ $order_by = ($_SESSION['method_mode'] == 1)? 'id' : 'likes';
 	
 $content_main .= $skin_manager->ShowSkinList($curlist, $_SESSION['num_per_page'], $gender, $order_by, $_SESSION['show_mode'], $mode, $ratio);
 
-$content_main .= $skin_manager->ShowSortTypeSelector();	
+$content_main .= $skin_manager->ShowSortTypeSelector($order_by, $_SESSION['show_mode']);	
 $content_side .= $skin_manager->ShowSideMenu($gender, $ratio);
