@@ -7,12 +7,6 @@ Alpha version for testing purposes only.
 
 Installation
 
-Copy files from 'upload' dir to webMCR folder
+Copy files from 'upload' dir to webMCR folder 
 
-Add into BD db.sql tables
-
-Add into config.php (section $bd_names)
-
-  'skins' => 'skins',  
-  'bad_skins' => 'bad_skins',
-  'skins_ratio' => 'skins_ratio',
+Go to the page www.your_site.com/?mode=skinposer
