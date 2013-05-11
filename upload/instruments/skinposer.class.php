@@ -33,10 +33,11 @@ private $downloads;
 		$this->base_url		= 'instruments/sp2/skins/';
 		$this->base_name	= 'sp_nc';
 		
-		$this->db    		= $bd_names['skins'];
 		$this->db_likes    	= $bd_names['likes'];	
-		$this->db_bad_skins	= $bd_names['bad_skins'];
-		$this->db_ratio		= $bd_names['skins_ratio'];
+		
+		$this->db    		= $bd_names['sp_skins'];		
+		$this->db_bad_skins	= $bd_names['sp_bad_skins'];
+		$this->db_ratio		= $bd_names['sp_skins_ratio'];
 		
 		$this->style 	= (!$style)? MCR_STYLE : $style;
 		
@@ -331,8 +332,15 @@ private $answer;
     public function SkinMenager($style = false, $base_url = 'index.php?mode=skinposer', $url_params = false) {
 	global $bd_names;	
 	
-		$this->db			= $bd_names['skins'];
-		$this->db_ratio		= $bd_names['skins_ratio'];
+		if (isset($bd_names['sp_skins'])) {
+		
+			$this->db			= $bd_names['sp_skins'];
+			$this->db_ratio		= $bd_names['sp_skins_ratio'];
+			
+		} else
+			
+			$this->db = false;
+		
 		$this->type			= ItemType::Skin;
 		$this->db_likes		= $bd_names['likes'];
 		$this->style		= (!$style)? MCR_STYLE : $style;		
@@ -364,7 +372,7 @@ private $answer;
 			if (microtime(true) - $start_time > 2) { 
 			
 				if (!$flush_trg) {
-					echo '[FindNewSkins] Loading...';
+					echo ' Loading...';
 					$flush_trg = true;
 				}
 				
@@ -447,14 +455,15 @@ private $answer;
 	public function TryAutoConfigure() {
 	global $config, $bd_names;
 	
-		if (isset($bd_names['skins_ratio']) and isset($bd_names['bad_skins']) and isset($bd_names['skins'])) 
-		
-			return false;
+		if ($this->db) return false;
 
 		// TODO also add menu items
 		
 		require(MCR_ROOT.'instruments/sp2/install/config.php');
 		require(MCR_ROOT.'instruments/sp2/install/sql.php');
+		
+		$this->db			= $bd_names['sp_skins'];
+		$this->db_ratio		= $bd_names['sp_skins_ratio'];	
 		
 		$menu = new Menu();
 
@@ -503,9 +512,9 @@ private $answer;
 		$config['sp_online']	= ($sp_offline)? false : true;
 		$config['sp_upload']	= $sp_upload;
 		
-		if ($bd_skins		and $this->BD_CheckExist($bd_skins, 'fname'))		$bd_names['skins']			= $bd_skins;				
-		if ($bd_bad_skins	and $this->BD_CheckExist($bd_bad_skins, 'hash'))	$bd_names['bad_skins']		= $bd_bad_skins;
-		if ($bd_skins_ratio and $this->BD_CheckExist($bd_skins_ratio, 'num'))	$bd_names['skins_ratio']	= $bd_skins_ratio;
+		if ($bd_skins		and $this->BD_CheckExist($bd_skins, 'fname'))		$bd_names['sp_skins']			= $bd_skins;				
+		if ($bd_bad_skins	and $this->BD_CheckExist($bd_bad_skins, 'hash'))	$bd_names['sp_bad_skins']		= $bd_bad_skins;
+		if ($bd_skins_ratio and $this->BD_CheckExist($bd_skins_ratio, 'num'))	$bd_names['sp_skins_ratio']	= $bd_skins_ratio;
 		
 		if ($bd_skins or $bd_bad_skins or $bd_skins_ratio) $this->answer .= 'Настройки изменены <br />';
 		

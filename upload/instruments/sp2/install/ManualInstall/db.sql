@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `skins` (
+CREATE TABLE IF NOT EXISTS `sp_skins` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `user_id` bigint(20) DEFAULT 0,
   `name` char(255) DEFAULT NULL,
@@ -16,13 +16,13 @@ CREATE TABLE IF NOT EXISTS `skins` (
   KEY `skin_spec` (`gender`, `ratio`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
-CREATE TABLE IF NOT EXISTS `bad_skins` (
+CREATE TABLE IF NOT EXISTS `sp_bad_skins` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `hash` char(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
-CREATE TABLE IF NOT EXISTS `skins_ratio` (
+CREATE TABLE IF NOT EXISTS `sp_skins_ratio` (
   `ratio` int(10) DEFAULT 0,
   `num` int(10) DEFAULT 1,
   PRIMARY KEY (`ratio`)

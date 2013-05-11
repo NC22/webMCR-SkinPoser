@@ -1,8 +1,8 @@
 <?php if (!defined('MCR')) exit;
 
-$bd_names['skins']			= 'skins';
-$bd_names['bad_skins']		= 'bad_skins';
-$bd_names['skins_ratio']	= 'skins_ratio';
+$bd_names['sp_skins']			= 'sp_skins';
+$bd_names['sp_bad_skins']		= 'sp_bad_skins';
+$bd_names['sp_skins_ratio']	= 'sp_skins_ratio';
 
 $config['sp_online']		= true;
 $config['sp_upload']		= false;

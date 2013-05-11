@@ -7,13 +7,12 @@
 
     <ul class="nav nav-tabs">
 	
-		<li class="active"><a href="#tab1" data-toggle="tab">Параметры</a></li>
-		<li><a href="#tab2" data-toggle="tab">База данных</a></li>
-		<li><a href="#tab3" data-toggle="tab">Инструменты</a></li>
+		<li class="active"><a href="#tab1" data-toggle="tab">Инструменты</a></li>
+		<li><a href="#tab2" data-toggle="tab">База данных</a></li>		
     </ul>
 	
     <div class="tab-content">
-	
+		
 		<div class="tab-pane active" id="tab1">
 			
 			<label class="checkbox">
@@ -26,30 +25,15 @@
 			
 			<label class="checkbox">
 			  <input type="checkbox" name="sp_upload" value="1" <?php echo ($config['sp_upload'])?'checked="checked"':'' ?>> Разрешить добавление скинов пользователями
-			</label>
-			
-		</div>
-		
-		<div class="tab-pane" id="tab2">
-	
-			<label>Таблица skins:</label>
-			<input type="text" name="bd_skins" value="<?php echo $bd_names['skins'] ?>">
-	
-			<label>Таблица bad_skins:</label>
-			<input type="text" name="bd_bad_skins" value="<?php echo $bd_names['bad_skins'] ?>">
-	
-			<label>Таблица skins_ratio:</label>
-			<input type="text" name="bd_skins_ratio" value="<?php echo $bd_names['skins_ratio'] ?>">
-		</div>
-		
-		<div class="tab-pane" id="tab3">
-		
+			</label>		
 			  
 			<label class="checkbox">
 			  
 			  <input type="checkbox" name="rebuild_items" value="1"> Пересоздать существующие скины
 							  
 			</label>
+			
+			<div class="block-line"></div>   
 			
 			<label class="checkbox">
 			  
@@ -58,7 +42,7 @@
 			</label>
 
 			<div class="alert alert-info">
-				При большом количестве изображений может потребоваться некоторое время на выполнение операции ( 4 тысячи скинов ~ 3-4 минуты )
+				При большом количестве изображений может потребоваться время на выполнение операции ( 4 тысячи скинов ~ 3-4 минуты )
 			</div>
 		
 			<label>Тег для новых скинов:</label>
@@ -68,6 +52,18 @@
 					<option value="0">Мужские</option>
 					<option value="1">Женские</option>
 			</select> 				
+		</div>
+		
+		<div class="tab-pane" id="tab2">
+	
+			<label>Таблица skins:</label>
+			<input type="text" name="bd_skins" value="<?php echo $bd_names['sp_skins'] ?>">
+	
+			<label>Таблица bad_skins:</label>
+			<input type="text" name="bd_bad_skins" value="<?php echo $bd_names['sp_bad_skins'] ?>">
+	
+			<label>Таблица skins_ratio:</label>
+			<input type="text" name="bd_skins_ratio" value="<?php echo $bd_names['sp_skins_ratio'] ?>">
 		</div>
 		
     </div>
@@ -80,7 +76,7 @@
 
 <?php if ($info) { ?>
 
-	<div class="alert alert-info">
+	<div class="alert alert-warn">
 
 		<?php echo $info ?>
 		
