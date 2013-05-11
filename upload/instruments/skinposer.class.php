@@ -1,6 +1,6 @@
 <?php
 /*	WEB-APP : WebMCR (С) 2013 NC22 
-	MODULE	: SkinPoser 1.0 (C) 2013 NC22 */
+	MODULE	: SkinPoser 2.0 (C) 2013 NC22 */
 	
 if (!defined('MCR')) exit;
 
@@ -63,19 +63,31 @@ private $downloads;
 		$this->downloads	= (int)$line[8];
 	}
 	
-	public function Create($post_name, $gender = 2, $max_size = 20, $max_ratio = 1, $del_blist = false) {
-
-		if (!POSTGood($post_name)) return 1;
+	public function Create($post_name, $gender = 2, $max_size = 20, $max_ratio = 1, $del_blist = false, $method = 'post') {
 		
 		$max_size = (int) $max_size;
 		$max_ratio = (int) $max_ratio;
 		$gender = (int)$gender;
+		
 		if ($gender > 2 or $gender < 0) $gender = 2;
 		
+	if ($method == 'post') {
+	
+		if (!POSTGood($post_name)) return 1;		
 		$new_file_info = POSTSafeMove($post_name, $this->base_dir); if (!$new_file_info) return 2;
 		
-		$way  = $this->base_dir.$new_file_info['tmp_name'];		
-		$hash = md5_file($this->base_dir.$new_file_info['tmp_name']);
+		$size_mb = $new_file_info['size_mb'];
+		$way  = $this->base_dir.$new_file_info['tmp_name'];	
+		
+	} else {
+	
+		if (!file_exists($post_name)) return 1;
+		
+		$size_mb = round( filesize($post_name)  / 1024 / 1024 , 2);
+		$way  = $post_name;	
+	}
+	
+		$hash = md5_file($way);
 		
 		if ($del_blist) BD("DELETE FROM {$this->db_bad_skins} WHERE hash='".$hash."'");
 		
@@ -91,7 +103,7 @@ private $downloads;
 			else                             return $line['id'] * -1;	
 		}
 		
-		if ( $max_size < $new_file_info['size_mb'] * 1024 )	{ 
+		if ( $max_size < $size_mb * 1024 )	{ 
 		
 			unlink($way); 
 			return 4; 
@@ -104,7 +116,7 @@ private $downloads;
 			return 5; 
 		}
 		
-		BD("INSERT INTO `{$this->db}` (hash, fsize, ratio, gender) VALUES ('".$hash."','".$new_file_info['size_mb']."','".$new_file_ratio."', '".$gender."')");
+		BD("INSERT INTO `{$this->db}` (hash, fsize, ratio, gender) VALUES ('".$hash."','".$size_mb."','".$new_file_ratio."', '".$gender."')");
 		
 		$this->id = mysql_insert_id();
 		$new_name = 'sp_nc'.$this->id.'.png';
@@ -117,8 +129,9 @@ private $downloads;
 		if (rename( $way, $new_way )) chmod($new_way , 0777);
 		else { unlink($way); BD("DELETE FROM `{$this->db}` WHERE `id`='".$this->id."'"); return 6; }	
 		
-		if (!skinGenerator2D::savePreview($this->base_dir.'preview/'.$new_name, $new_way, false, false, 160))
-		{ unlink($new_way); BD("DELETE FROM `{$this->db}` WHERE `id`='".$this->id."'"); return 7; }	
+		$preview = skinGenerator2D::savePreview($this->base_dir.'preview/'.$new_name, $new_way, false, false, 160);
+		if (!$preview) { unlink($new_way); BD("DELETE FROM `{$this->db}` WHERE `id`='".$this->id."'"); return 7; }	
+		else imagedestroy($preview);
 		
 		BD("LOCK TABLES `{$this->db_ratio}` WRITE;");
 		BD("INSERT INTO `{$this->db_ratio}` (ratio) VALUES ('".((int)$new_file_ratio)."') ON DUPLICATE KEY UPDATE `num`= num + 1;");
@@ -126,7 +139,7 @@ private $downloads;
 
         $this->name			= '';	
 		$this->fname		= $new_name;	
-		$this->fsize		= $new_file_info['size_mb'];
+		$this->fsize		= $size_mb;
 		$this->dislikes		= 0;
 		$this->likes		= 0;		
 		$this->ratio		= $new_file_ratio;		
@@ -313,6 +326,7 @@ private $base_url;
 private $url_params;
 private $db;
 private $db_ratio;
+private $answer;
 
     public function SkinMenager($style = false, $base_url = 'index.php?mode=skinposer', $url_params = false) {
 	global $bd_names;	
@@ -324,23 +338,68 @@ private $db_ratio;
 		$this->style		= (!$style)? MCR_STYLE : $style;		
 		$this->base_url		= $base_url;
 		$this->url_params	= (!$url_params)? '' : $url_params;	
+		$this->answer		= '';
 		
 		parent::Menager($this->style);		
 	}
 	
-	public function ShowSortTypeSelector($order_by = 'id', $sort = 1) {
-
-		ob_start(); 
-		include $this->style.'skinposer/sort.html'; 
+	public function FindNewSkins() {
+	$skin_dir_way = MCR_ROOT.'instruments/sp2/upload/';
 	
-	return ob_get_clean();		
-	}	
+	if (!is_dir($skin_dir_way)) { $this->answer .= 'Папка загрузки новых скинов не существует  <br />'; return false; }
+	
+	$skin_dir = opendir($skin_dir_way);
+	
+	@ini_set("max_execution_time", 0);
+	
+	$skin_black = 0; $skin_exist = 0; $skin_add	= 0; $skin_error = 0;	
+	$start_time = microtime(true);
+	$flush_trg = false;
+	
+		while ($filename = readdir($skin_dir)) {
+
+			unset($new_skin);
+			unset($result);
+			
+			if (microtime(true) - $start_time > 2) { 
+			
+				if (!$flush_trg) {
+					echo '[FindNewSkins] Loading...';
+					$flush_trg = true;
+				}
+				
+			echo '.';
+			flush();
+			$start_time = microtime(true); 
+			
+			}
+			
+			if ( $filename == '.' or $filename == '..' ) continue;
+					
+			$new_skin = new SPItem();
+			$result = $new_skin->Create($skin_dir_way . $filename, 2, 5000, 24, false, 'file');
+			
+				if ($result == 3) $skin_black++;
+			elseif ($result < 0) $skin_exist++;
+			elseif ($result == 0) $skin_add++;
+			else {
+				//$this->answer .= $result . '['.$skin_dir . $filename.']' .'<br />';
+				$skin_error++;
+			
+			}
+		}
+	closedir($skin_dir); 
+	
+	$this->answer .= 'Добавление файлов завершено. <br /> Добавлены: '.$skin_add.' Проигнорированы: Черный список: ' . $skin_black . ' Дубликаты: ' .$skin_exist. ' Ошибки: '. $skin_error;	
+	}
 	
 	public function RebuildAll() {
 	
 	BD("LOCK TABLES `{$this->db_ratio}` WRITE;");
 	BD("DELETE FROM `{$this->db_ratio}` WHERE `ratio` != '0'");	
 	BD("UNLOCK TABLES;");
+	
+	@ini_set("max_execution_time", 0);
 	
 		$result = BD("SELECT `id` FROM `".$this->db."`");
 			
@@ -351,7 +410,131 @@ private $db_ratio;
 					$skin = new SPItem($line[0]);				
 					$skin->Rebuild();					
 				}	
+	
+	$this->answer .= 'Обновление существующей базы выполнено <br />';
+	}
+			
+	private static function SaveConfigFile() {
+	global $config,$bd_names,$bd_money,$bd_users,$site_ways,$info;
+		
+		$txt  = '<?php'.PHP_EOL;
+		$txt .= '$config = '.var_export($config, true).';'.PHP_EOL;
+		$txt .= '$bd_names = '.var_export($bd_names, true).';'.PHP_EOL;
+		$txt .= '$bd_users = '.var_export($bd_users, true).';'.PHP_EOL;
+		$txt .= '/* iconomy or some other plugin, just check names */'.PHP_EOL;
+		$txt .= '$bd_money = '.var_export($bd_money, true).';'.PHP_EOL;
+		$txt .= '$site_ways = '.var_export($site_ways, true).';'.PHP_EOL;
+		$txt .= '/* Put all new config additions here */'.PHP_EOL;
+		$txt .= '?>';
 
+		$result = file_put_contents(MCR_ROOT.'config.php', $txt);
+
+			if (is_bool($result) and $result == false) return false;		
+	
+	return true;
+	}
+
+	private function BD_CheckExist($table, $by_column) {
+	
+		if (@mysql_query("SELECT `$by_column` FROM `$table` LIMIT 0, 1")) return true;
+		else {
+			
+			$this->answer .= 'Таблица не найдена ( '.$table. ' )  <br />';
+			return false;
+		}
+	}
+		
+	public function TryAutoConfigure() {
+	global $config, $bd_names;
+	
+		if (isset($bd_names['skins_ratio']) and isset($bd_names['bad_skins']) and isset($bd_names['skins'])) 
+		
+			return false;
+
+		// TODO also add menu items
+		
+		require(MCR_ROOT.'instruments/sp2/install/config.php');
+		require(MCR_ROOT.'instruments/sp2/install/sql.php');
+		
+		$menu = new Menu();
+
+		$tool_sp_btn = array (		
+					'name'			=> 'Образы',
+					'url' 			=> ($config['rewrite'])? 'go/skinposer' : '?mode=skinposer',
+					'parent_id'		=> -1,
+					'lvl'			=> 1,
+					'permission'	=> -1,
+					'config'		=> 'sp_online');
+					
+		$adm_sp_btn = array (		
+					'name'			=> 'SkinPoser',
+					'url' 			=> '?mode=skinposer&do=admin',
+					'parent_id'		=> 'admin',
+					'lvl'			=> 15,
+					'permission'	=> -1);
+					
+		if (!$menu->SaveItem('skinposer', 'left', $tool_sp_btn) or
+			!$menu->SaveItem('sp_admin', 'right', $adm_sp_btn)) $this->answer .= 'Не удалось добавить пункт меню <br />';	
+		
+		if (!self::SaveConfigFile()) $this->answer .= 'Ошибка применения настроек <br />';	
+		
+		if ($this->answer) return  $this->ShowAdminForm();
+		
+		return false;
+	}	
+	
+	public function ShowAdminForm() {
+	global $bd_names, $config;
+	
+		$info = '';
+		
+		if (isset($_POST['sp_config_set'])) {			
+		
+		$bd_skins		= InputGet('bd_skins', 'POST', 'str');
+		$bd_bad_skins	= InputGet('bd_bad_skins', 'POST', 'str');			
+		$bd_skins_ratio = InputGet('bd_skins_ratio', 'POST', 'str');
+		
+		$rebuild_items	= InputGet('rebuild_items', 'POST', 'bool');
+		$find_items	= InputGet('find_items', 'POST', 'bool');
+		
+		$sp_offline	= InputGet('sp_offline', 'POST', 'bool');
+		$sp_upload	= InputGet('sp_upload', 'POST', 'bool');
+		
+		$config['sp_online']	= ($sp_offline)? false : true;
+		$config['sp_upload']	= $sp_upload;
+		
+		if ($bd_skins		and $this->BD_CheckExist($bd_skins, 'fname'))		$bd_names['skins']			= $bd_skins;				
+		if ($bd_bad_skins	and $this->BD_CheckExist($bd_bad_skins, 'hash'))	$bd_names['bad_skins']		= $bd_bad_skins;
+		if ($bd_skins_ratio and $this->BD_CheckExist($bd_skins_ratio, 'num'))	$bd_names['skins_ratio']	= $bd_skins_ratio;
+		
+		if ($bd_skins or $bd_bad_skins or $bd_skins_ratio) $this->answer .= 'Настройки изменены <br />';
+		
+		if (!self::SaveConfigFile()) $this->answer .= 'Ошибка применения настроек <br />';	
+		
+		if ($find_items) $this->FindNewSkins();
+		
+		if ($rebuild_items) $this->RebuildAll();
+		
+		$info = $this->answer;	
+		}
+
+		ob_start(); 
+		include $this->style.'skinposer/admin/constants.html'; 
+	
+	return ob_get_clean();				
+	}
+	
+	public function ShowSortTypeSelector($order_by = 'id', $sort = 1) {
+
+		ob_start(); 
+		include $this->style.'skinposer/sort.html'; 
+	
+	return ob_get_clean();		
+	}
+	
+	public function ShowSPCloseInfo() {
+	
+		return Menager::ShowStaticPage($this->style.'skinposer/admin/sp_closed_warn.html');
 	}
 	
 	public function ShowGenderSelector($current = 4) {
