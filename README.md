@@ -3,7 +3,7 @@ webMCR-SkinPoser-2
 
 Addon for webMCR, that provide skin gallery page.
 
-Alpha version for testing purposes only. 
+Beta version. 
 
 Installation
 
