@@ -214,6 +214,8 @@ private $downloads;
 	else
 		$work_user->defaultSkinTrigger(false);	
 		
+	BD("UPDATE `{$this->db}` SET `downloads` = downloads + 1 WHERE `id`='".$this->id."'");	
+	
 	return true;		
 	}
 	
