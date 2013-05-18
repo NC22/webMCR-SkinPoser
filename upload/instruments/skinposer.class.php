@@ -209,7 +209,7 @@ private $downloads;
 	if (($this->isFemaleSkin() and !$female) or (!$this->isFemaleSkin() and $female)) 
 	return false;
 	
-	if (!$work_user->getPermisson('sp_change') or $work_user->getPermission('max_ratio') < $this->ratio) return false;
+	if (!$work_user->getPermission('sp_change') or $work_user->getPermission('max_ratio') < $this->ratio) return false;
 	
 	$work_user->deleteSkin();		
 	$work_user->deleteBuffer();
