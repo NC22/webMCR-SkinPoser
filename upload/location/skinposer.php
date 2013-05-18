@@ -4,7 +4,7 @@ $installed  = (isset($bd_names['sp_skins']))? true : false;
 $user_admin = (!empty($user) and $user->group() == 3) ? true : false;
 $user_lvl 	= (!empty($user)) ? $user->lvl() : -1;
 
-if (($user_lvl <= 0) or 
+if (($user_lvl == 0) or 
 	(isset($config['sp_online']) and !$config['sp_online'] and !$user_admin) or 
 	(!$installed and !$user_admin)) { 
 
