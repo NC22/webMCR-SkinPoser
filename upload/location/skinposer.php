@@ -1,8 +1,12 @@
 <?php if (!defined('MCR')) exit;
- 
-if ((!empty($user) and $user->lvl() <= 0) or 
-	(isset($config['sp_online']) and !$config['sp_online'] and 
-	((!empty($user) and $user->group() != 3) or empty($user)))) { 
+
+$installed  = (isset($bd_names['sp_skins']))? true : false;
+$user_admin = (!empty($user) and $user->group() == 3) ? true : false;
+$user_lvl 	= (!empty($user)) ? $user->lvl() : -1;
+
+if (($user_lvl <= 0) or 
+	(isset($config['sp_online']) and !$config['sp_online'] and !$user_admin) or 
+	(!$installed and !$user_admin)) { 
 
 	header("Location: ".BASE_URL); exit; 
 }
@@ -20,10 +24,10 @@ if ((!empty($_POST['do']) or !empty($_GET['do'])) and !empty($user)) {
 	$do = (isset($_POST['do']))? $_POST['do'] : $_GET['do'];
 
 	switch ($do) {
-		case 'admin': /* skiped; show part is on bottom */ break;
+		case 'admin': if (!$user_admin) exit;  break;
 		case 'del':
 		
-			if (empty($_POST['skin_id'])) aExit(1);	
+			if (empty($_POST['skin_id']) or !$user_admin) aExit(1);	
 			
 			$skin_id = (int) $_POST['skin_id'];
 			$sp_item = new SPItem($skin_id);
@@ -54,7 +58,7 @@ if ((!empty($_POST['do']) or !empty($_GET['do'])) and !empty($user)) {
 		break;	
 		case 'add':	
 		
-			if (!$user->getPermission('change_skin') or !$config['sp_upload']) { exit; break; }
+			if (!$user->getPermission('sp_upload') or (!$config['sp_upload'] and !$user_admin)) { exit; break; }
 				
 			$max_ratio 		= $user->getPermission('max_ratio');
 			$max_fsize 		= $user->getPermission('max_fsize');
@@ -68,7 +72,7 @@ if ((!empty($_POST['do']) or !empty($_GET['do'])) and !empty($user)) {
 			$result = $sp_item->Create('skin_upload', $skin_gender, $max_fsize, $max_ratio, $skin_check);
 			$error = '';
 			
-			if ($result < 0) $error = 'Скин уже есть в базе. <a href="index.php?mode=skins&id='.($result * -1).'">Перейти</a>';
+			if ($result < 0) $error = 'Скин уже есть в базе. <a href="index.php?mode=skinposer&cid='.($result * -1).'">Перейти</a>';
 			else
 			
 			switch($result) {
@@ -95,18 +99,14 @@ if ((!empty($_POST['do']) or !empty($_GET['do'])) and !empty($user)) {
 }
 
 /* Default vars */
-
-if ($do and $do == 'admin') 
-	$menu->SetItemActive('sp_admin');
-else
-	$menu->SetItemActive('skinposer');
-
+		
 $page    = 'Галерея образов';
 
 $curlist = (isset($_GET['l'])) ? (int) $_GET['l'] : 1;
 if ( $curlist <= 0 ) $curlist = 1;
 
 $ratio   = (isset($_GET['ratio'])) ? (int) $_GET['ratio'] : 1;	
+$skin_id = (isset($_GET['cid'])) ? (int) $_GET['cid'] : false;	
 
 $mode    = 'base';
 
@@ -136,25 +136,37 @@ if ( $_SESSION['num_per_page'] < 5 )   $_SESSION['num_per_page'] = 5;
 
 $skin_manager = new SkinMenager(false, $work_url, $url_params);
 
-/* Show */
-
 $conf_info = $skin_manager->TryAutoConfigure();
 
-if ($conf_info) {
+	if ($do and $do == 'admin') 
+	
+		$menu->SetItemActive('sp_admin');
+	else
+	
+		$menu->SetItemActive('skinposer');
+
+/* Show */
+
+if ($conf_info and $user_admin) {
 
 	$content_main .= $conf_info; 
 	
-} elseif ($do and $do == 'admin') {
+} elseif ($do and $do == 'admin' and $user_admin) {
 
 	$content_main .= $skin_manager->ShowAdminForm();
 	
+} elseif ($skin_id) {
+
+	$content_main .= $skin_manager->ShowById($skin_id);
 } else {
 	
-	if (!empty($user) and $user->getPermission('change_skin')) 
+	if (!empty($user) and $user->getPermission('sp_upload')) 
 		
-		$content_main .= $skin_manager->ShowAddForm();
+		if ( (!$config['sp_upload'] and $user_admin) or $config['sp_upload'] )
 		
-	if (!$config['sp_online']) $content_main .=  $skin_manager->ShowSPCloseInfo();
+			$content_main .= $skin_manager->ShowAddForm();
+		
+	if ($user_admin) $content_main .=  $skin_manager->ShowSPStateInfo();
 	
 	$order_by = ($_SESSION['method_mode'] == 1)? 'id' : 'likes';
 		

@@ -1,6 +1,6 @@
 <?php
 /*	WEB-APP : WebMCR (С) 2013 NC22 
-	MODULE	: SkinPoser 2.0 (C) 2013 NC22 */
+	MODULE	: SkinPoser 2 (C) 2013 NC22 */
 	
 if (!defined('MCR')) exit;
 
@@ -199,7 +199,7 @@ private $downloads;
 	if (($this->isFemaleSkin() and !$female) or (!$this->isFemaleSkin() and $female)) 
 	return false;
 	
-	if ($work_user->getPermission('max_ratio') < $this->ratio) return false;
+	if (!$work_user->getPermisson('sp_change') or $work_user->getPermission('max_ratio') < $this->ratio) return false;
 	
 	$work_user->deleteSkin();		
 	$work_user->deleteBuffer();
@@ -265,13 +265,13 @@ private $downloads;
 	if (!empty($user)) {
 		
 		$female = $user->isFemale();
-		if (($this->isFemaleSkin() and !$female) or (!$this->isFemaleSkin() and $female)) 
-		
-		$available = false;
 		
 		if ($user->group() == 3) $admin = true;
 		
-		if ($user->getPermission('max_ratio') < $this->ratio) $available = false;
+		if (($this->isFemaleSkin() and !$female) or (!$this->isFemaleSkin() and $female)) $available = false;		
+		
+		if (!$user->getPermission('sp_change') or $user->getPermission('max_ratio') < $this->ratio) $available = false;
+		
 	} else $available = false;
 
 		$skin_info = $this->getInfo();
@@ -384,7 +384,7 @@ private $answer;
 			
 			}
 			
-			if ( $filename == '.' or $filename == '..' ) continue;
+			if ( $filename == '.' or $filename == '..' or $filename == '.htaccess'  ) continue;
 					
 			$new_skin = new SPItem();
 			$result = $new_skin->Create($skin_dir_way . $filename, 2, 5000, 24, false, 'file');
@@ -444,18 +444,15 @@ private $answer;
 	return true;
 	}
 
-	private function BD_CheckExist($table, $by_column) {
+	public static function BD_CheckExist($table, $by_column) {
 	
 		if (@mysql_query("SELECT `$by_column` FROM `$table` LIMIT 0, 1")) return true;
-		else {
-			
-			$this->answer .= 'Таблица не найдена ( '.$table. ' )  <br />';
-			return false;
-		}
+		
+		return false;
 	}
 		
 	public function TryAutoConfigure() {
-	global $config, $bd_names;
+	global $config, $bd_names, $menu;
 	
 		if ($this->db) return false;
 
@@ -467,7 +464,7 @@ private $answer;
 		$this->db			= $bd_names['sp_skins'];
 		$this->db_ratio		= $bd_names['sp_skins_ratio'];	
 		
-		$menu = new Menu();
+		if (!isset($menu)) $menu = new Menu();
 
 		$tool_sp_btn = array (		
 					'name'			=> 'Образы',
@@ -497,7 +494,7 @@ private $answer;
 	public function ShowAdminForm() {
 	global $bd_names, $config;
 	
-		$info = '';
+		$info = $this->answer;
 		
 		if (isset($_POST['sp_config_set'])) {			
 		
@@ -512,11 +509,22 @@ private $answer;
 		$sp_upload	= InputGet('sp_upload', 'POST', 'bool');
 		
 		$config['sp_online']	= ($sp_offline)? false : true;
-		$config['sp_upload']	= $sp_upload;
+		$config['sp_upload']	= $sp_upload;		
 		
-		if ($bd_skins		and $this->BD_CheckExist($bd_skins, 'fname'))		$bd_names['sp_skins']			= $bd_skins;				
-		if ($bd_bad_skins	and $this->BD_CheckExist($bd_bad_skins, 'hash'))	$bd_names['sp_bad_skins']		= $bd_bad_skins;
-		if ($bd_skins_ratio and $this->BD_CheckExist($bd_skins_ratio, 'num'))	$bd_names['sp_skins_ratio']	= $bd_skins_ratio;
+		if ($bd_skins)	
+		
+			if (!self::BD_CheckExist($bd_skins, 'fname')) $this->answer .= 'Таблица не найдена ( '.$bd_skins. ' )  <br />';
+			else $bd_names['sp_skins'] = $bd_skins;
+			
+		if ($bd_bad_skins)	
+		
+			if (!self::BD_CheckExist($bd_bad_skins, 'hash')) $this->answer .= 'Таблица не найдена ( '.$bd_bad_skins. ' )  <br />';
+			else $bd_names['sp_bad_skins'] = $bd_bad_skins;
+
+		if ($bd_skins_ratio)	
+		
+			if (!self::BD_CheckExist($bd_skins_ratio, 'num')) $this->answer .= 'Таблица не найдена ( '.$bd_skins_ratio. ' )  <br />';
+			else $bd_names['sp_skins_ratio'] = $bd_skins_ratio;			
 		
 		if ($bd_skins or $bd_bad_skins or $bd_skins_ratio) $this->answer .= 'Настройки изменены <br />';
 		
@@ -543,9 +551,18 @@ private $answer;
 	return ob_get_clean();		
 	}
 	
-	public function ShowSPCloseInfo() {
-	
-		return Menager::ShowStaticPage($this->style.'skinposer/admin/sp_closed_warn.html');
+	public function ShowSPStateInfo() {
+	global $config;
+		
+	$html = '';
+		
+		if (!$config['sp_online'])
+			$html .= Menager::ShowStaticPage($this->style.'skinposer/admin/sp_closed_warn.html');
+		
+		if (!$config['sp_upload'])
+			$html .=  Menager::ShowStaticPage($this->style.'skinposer/admin/sp_upload_warn.html');
+			
+	return $html;
 	}
 	
 	public function ShowGenderSelector($current = 4) {
@@ -592,6 +609,27 @@ private $answer;
 	
 	ob_start(); 
 	include $this->style.'skinposer/add_skin_form.html'; 
+	
+	return ob_get_clean();
+	}
+	public function ShowById($id) {
+	
+		$mode_txt = 'Отдельный образ';
+		$gender_txt = lng('NOT_SET');
+		$html_skin_list = '';
+		
+		$skins_count = 1;		
+		$skin = new SPItem($id);
+		
+		if (!$skin->Exist()) $html_skin_list .= 'Скин удален'; 
+		else {
+		
+			$gender_txt = ($skin->isFemaleSkin())? lng('FEMALE') : lng('MALE');			
+			$html_skin_list = $skin->Show();			
+		}
+		
+		ob_start(); 
+		include $this->style.'skinposer/main.html'; 
 	
 	return ob_get_clean();
 	}

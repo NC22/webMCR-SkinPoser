@@ -29,3 +29,11 @@ BD("CREATE TABLE IF NOT EXISTS `{$bd_names['sp_skins_ratio']}` (
   `num` int(10) DEFAULT 1,
   PRIMARY KEY (`ratio`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;");
+
+BD("ALTER TABLE `{$bd_names['groups']}` DROP `skinposer`;"); // drop depricated field
+ 
+BD("ALTER TABLE `{$bd_names['groups']}`	ADD `sp_upload` tinyint(1) NOT NULL DEFAULT 0;");
+BD("ALTER TABLE `{$bd_names['groups']}`	ADD `sp_change` tinyint(1) NOT NULL DEFAULT 0;");
+	
+BD("UPDATE `{$bd_names['groups']}` SET `sp_upload`='1',`sp_change`='1' WHERE `id`='3'");
+BD("UPDATE `{$bd_names['groups']}` SET `sp_upload`='0',`sp_change`='1' WHERE `id`='1'");
