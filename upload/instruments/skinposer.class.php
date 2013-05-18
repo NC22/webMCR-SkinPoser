@@ -466,8 +466,6 @@ private $answer;
 	
 		if ($this->db) return false;
 
-		// TODO also add menu items
-		
 		require(MCR_ROOT.'instruments/sp2/install/config.php');
 		require(MCR_ROOT.'instruments/sp2/install/sql.php');
 		
@@ -684,7 +682,7 @@ private $answer;
 			$mode_txt = 'Понравившиеся';	
 		}		
 		
-		if ($mode != 'like') {
+		if ($mode != 'likes') {
 		
 			if ($mode == 'HD' and $ratio == 1337) $base_sql .= " AND `ratio` != '1'";
 			else $base_sql .= " AND `ratio` = '".$ratio."'";
@@ -707,15 +705,15 @@ private $answer;
 		if (!$skins_count) $html_skin_list = Menager::ShowStaticPage($this->style.'skinposer/skin_empty.html');
 		else {
 		
-			if ($mode != 'like')
+			if ($mode != 'likes')
 			
 			$result = BD("SELECT `id` FROM `".$this->db."` ".$base_sql." ORDER BY `$order_by` $sort LIMIT ".($per_page*($list-1)).",$per_page");
 			
 			else {
 
-			$sql = 	"SELECT `skin_id` AS 'id'";
-			$sql .= "FROM `".$this->db."` LEFT JOIN `".$this->db_likes."` ON ".$this->db.".id = ".$this->db_likes.".skin_id";
-			$sql .= "WHERE ".$this->db_likes.".user_id = '".$user->id()."' AND `item_type` = '".$this->type."' AND `var` = '1' ORDER BY ".$this->db_likes.".id DESC LIMIT ".($per_page*($list-1)).",$per_page";
+			$sql = 	"SELECT `item_id` AS 'id' ";
+			$sql .= "FROM `".$this->db."` LEFT JOIN `".$this->db_likes."` ON ".$this->db.".id = ".$this->db_likes.".item_id ";
+			$sql .= "WHERE ".$this->db_likes.".user_id = '".$user->id()."' AND ".$this->db_likes.".item_type = '".$this->type."' AND ".$this->db_likes.".var = '1' ORDER BY ".$this->db_likes.".id DESC LIMIT ".($per_page*($list-1)).",$per_page";
 			
 			$result = BD($sql);			
 			}	
