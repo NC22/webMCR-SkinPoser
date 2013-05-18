@@ -170,11 +170,21 @@ private $downloads;
 		
 			$this->Delete();
 			vtxtlog('[Rebuild][skinGenerator2D] SPItem ID '.$this->id.' wrong skin format - delete');
+			
+			return false;
 		}
 		
-		if (!skinGenerator2D::savePreview($preview_way, $skin_way, false, false, 160) or !file_exists($preview_way))
+		if (!skinGenerator2D::savePreview($preview_way, $skin_way, false, false, 160) ) {
+
+			$this->Delete();
+			vtxtlog('[Rebuild][skinGenerator2D] Fail to create preview for SPItem ID '.$this->id);	
+			
+			return false;
+		}
 		
-		vtxtlog('[Rebuild][skinGenerator2D] Fail rebuild preview for SPItem ID '.$this->id);
+		if (!file_exists($preview_way))
+		
+			vtxtlog('[Rebuild][skinGenerator2D] Fail to save preview for SPItem ID '.$this->id);
 				
 		BD("LOCK TABLES `{$this->db_ratio}` WRITE;");
 		BD("INSERT INTO `{$this->db_ratio}` (ratio) VALUES ('".((int)$skin_ratio)."') ON DUPLICATE KEY UPDATE `num`= num + 1;");
@@ -311,7 +321,7 @@ private $downloads;
 		if (file_exists($preview_way)) unlink($preview_way);
 		
 		BD("DELETE FROM `{$this->db}` WHERE `id`='".$this->id."'");	
-		BD("DELETE FROM `{$this->db_likes} ` WHERE `item_id`='".$this->id."' AND `item_type`='".ItemType::Skin."'");
+		BD("DELETE FROM `{$this->db_likes}` WHERE `item_id`='".$this->id."' AND `item_type`='".ItemType::Skin."'");
 		
 		BD("LOCK TABLES `{$this->db_ratio}` WRITE;");
 		BD("UPDATE `{$this->db_ratio}` SET `num` = num - 1 WHERE `ratio`='".$this->ratio."'");
