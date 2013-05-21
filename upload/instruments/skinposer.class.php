@@ -309,6 +309,16 @@ private $downloads;
 	return ob_get_clean();
 	}
 	
+	public function SetGender($new_gender) {
+		
+		$new_gender = (int)($new_gender);
+		if ($new_gender < 0 or $new_gender > 2) $new_gender = 0;
+		
+		BD("UPDATE `{$this->db}` SET `gender` = '$new_gender' WHERE `id`='".$this->id."'");
+		
+		$this->gender = $new_gender;		
+	}
+	
 	public function Delete() {
 	global $bd_names;
 	

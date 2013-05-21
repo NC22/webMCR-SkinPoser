@@ -25,6 +25,19 @@ if ((!empty($_POST['do']) or !empty($_GET['do'])) and !empty($user)) {
 
 	switch ($do) {
 		case 'admin': if (!$user_admin) exit;  break;
+		case 'gender':
+		
+			if (empty($_POST['skin_id']) or !$user_admin or !isset($_POST['new_gender'])) aExit(1);	
+			
+			$skin_id = (int) $_POST['skin_id'];			
+			$new_gender = (int) $_POST['new_gender'];
+			
+			$sp_item = new SPItem($skin_id);
+			
+			$sp_item->SetGender($new_gender);
+			aExit(0);
+			 
+		break;	
 		case 'del':
 		
 			if (empty($_POST['skin_id']) or !$user_admin) aExit(1);	

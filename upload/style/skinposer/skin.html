@@ -30,9 +30,15 @@
 			
 			<?php if ($admin) { ?>
 			
+				<a id="skin-change-gender-<?php echo $skin_id ?>" href="#" onclick="SetGenderSkin(<?php echo $skin_id ?>, <?php echo $skin_gender ?>); return false" >
+				
+					<img id="skin-gender-<?php echo $skin_id ?>" src="<?php echo STYLE_URL ?>skinposer/img/gender_<?php echo $skin_gender ?>.png" height="9" width="9" alt="Сменить пол" />
+				
+				</a>	
+				
 				<a href="#" onclick="DeleteSkin(<?php echo $skin_id; ?>); return false" >
 				
-					<img src="<?php echo STYLE_URL ?>skinposer/img/drop.png" alt="Удалить" />
+					<img src="<?php echo STYLE_URL ?>skinposer/img/drop.png" height="9" width="9" alt="Удалить" />
 				
 				</a>	
 			

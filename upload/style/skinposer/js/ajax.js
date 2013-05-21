@@ -12,6 +12,23 @@ function ApplyForm(id) {
 	GetById('vform').style.top =  margin + 'px' 
 }
 
+function SetGenderSkin(id, current) {
+
+	var set = 0
+	if (current < 2) set = current + 1 
+
+	var event = function(response) {
+
+		if ( response['code'] == 0 ) { 
+			GetById('skin-change-gender-' + id).onclick = function() { SetGenderSkin(id, set); return false }
+			GetById('skin-gender-' + id).src = way_style + 'skinposer/img/gender_' + set + '.png'	
+		}
+	}
+
+	SendByXmlHttp('index.php', 'mode=skinposer&do=gender&skin_id=' + encodeURIComponent(id) + '&new_gender=' + set, event)
+	return false
+}
+
 function DeleteSkin(id) {
 
 	if (!confirm("Уверены, что хотите удалить файл?")) return false
