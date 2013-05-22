@@ -1,8 +1,10 @@
 <?php
 /*	WEB-APP : WebMCR (С) 2013 NC22 
-	MODULE	: SkinPoser 2 (C) 2013 NC22 */
+	MODULE	: SkinPoser (C) 2013 NC22 */
 	
 if (!defined('MCR')) exit;
+
+define('MCR_SP_VER', '1.0'); 
 
 require_once(MCR_ROOT.'instruments/skin.class.php');
 
