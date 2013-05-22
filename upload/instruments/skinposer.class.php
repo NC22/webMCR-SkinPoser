@@ -329,6 +329,14 @@ private $downloads;
 		$skin_way = $this->base_dir.$this->fname;
 		$preview_way = $this->base_dir.'preview/'.$this->fname;
 		
+		$result = BD("SELECT `hash` FROM `{$this->db}` WHERE `id`='".$this->id."'");
+		
+		if (mysql_num_rows( $result )) {
+			
+		$line = mysql_fetch_array( $result );		
+		BD("INSERT INTO {$this->db_bad_skins} (hash) VALUES ('".$line['hash']."')");
+		}
+		
 		if (file_exists($skin_way)) unlink($skin_way);
 		if (file_exists($preview_way)) unlink($preview_way);
 		

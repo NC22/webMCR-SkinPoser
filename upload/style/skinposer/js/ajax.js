@@ -35,8 +35,17 @@ function DeleteSkin(id) {
 
 	var event = function(response) {
 	
-		if ( response['code'] == 0 ) document.location.reload(true)
-		else alert(response['code'] + ' ' + response['message'])		
+		if ( response['code'] == 0 ) {
+			
+			$('#skin-' + id).fadeOut(200, function (){
+			
+			var skinDel = GetById('skin-' + id)
+					
+			if ( skinDel == null ) document.location.reload(true)
+			else skinDel.parentNode.removeChild(skinDel)
+			});
+
+		} else alert(response['code'] + ' ' + response['message'])		
 	}
 
 	SendByXmlHttp('index.php', 'mode=skinposer&do=del&skin_id=' + encodeURIComponent(id), event)
@@ -80,7 +89,7 @@ function uploadSkin() {
 			
 				if (response['gender'] < 2) response['gender'] += 3 			
 			
-			document.location.href = base_url + 'index.php?mode=skinposer&ratio=' + response['ratio'] + '&type=' + response['gender']				
+			document.location.href = base_url + 'index.php?mode=skinposer&method=1&ratio=' + response['ratio'] + '&type=' + response['gender']				
 			return false			
 			}
 			GetById('mBoxUpl').innerHTML = nl2br(response['message'])
