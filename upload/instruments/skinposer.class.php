@@ -631,7 +631,7 @@ private $answer;
 	if (empty($user)) exit;
 	
 	$max_ratio = $user->getPermission('max_ratio');
-	$max_ratio_text = (62*$max_ratio).'x'.(32*$max_ratio);
+	$max_ratio_text = (64*$max_ratio).'x'.(32*$max_ratio);
 	
 	$max_fsize = $user->getPermission('max_fsize');	
 	

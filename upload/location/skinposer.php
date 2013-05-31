@@ -76,7 +76,7 @@ if ((!empty($_POST['do']) or !empty($_GET['do'])) and !empty($user)) {
 			$max_ratio 		= $user->getPermission('max_ratio');
 			$max_fsize 		= $user->getPermission('max_fsize');
 			
-			$max_ratio_text = (62*$max_ratio).'x'.(32*$max_ratio);		
+			$max_ratio_text = (64*$max_ratio).'x'.(32*$max_ratio);		
 			
 			$skin_gender	= (!isset($_POST['skin_gender']))? 2 : (int) $_POST['skin_gender'];
 			$skin_check		= (empty($_POST['skin_check']))? false : true; 	
