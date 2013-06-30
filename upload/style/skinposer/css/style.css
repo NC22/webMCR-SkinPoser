@@ -208,7 +208,7 @@ font-size: 16px;
 	overflow:visible;
 	color: #5e5e5e;
 	line-height: 1.2;
-	border: 1px dashed #3e3e3e;
+	border: 1px solid #cccccc;
 	
 	display: inline-block;
 	margin-right: 15px;
