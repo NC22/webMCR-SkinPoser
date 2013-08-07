@@ -480,17 +480,11 @@ private $answer;
 		
 	public function TryAutoConfigure() {
 	global $config, $bd_names, $menu;
-	
-		if ($this->db) return false;
 
-		require(MCR_ROOT.'instruments/sp2/install/config.php');
-		require(MCR_ROOT.'instruments/sp2/install/sql.php');
-		
-		$this->db			= $bd_names['sp_skins'];
-		$this->db_ratio		= $bd_names['sp_skins_ratio'];	
-		
 		if (!isset($menu)) $menu = new Menu();
-
+		
+		if (!$menu->IsItemExists('skinposer') or !$menu->IsItemExists('sp_admin')) {
+		
 		$tool_sp_btn = array (		
 					'name'			=> 'Образы',
 					'url' 			=> ($config['rewrite'])? 'go/skinposer' : '?mode=skinposer',
@@ -508,6 +502,16 @@ private $answer;
 					
 		if (!$menu->SaveItem('skinposer', 'left', $tool_sp_btn) or
 			!$menu->SaveItem('sp_admin', 'right', $adm_sp_btn)) $this->answer .= 'Не удалось добавить пункт меню <br />';	
+		
+		}
+		
+		if ($this->db) return false;
+
+		require(MCR_ROOT.'instruments/sp2/install/config.php');
+		require(MCR_ROOT.'instruments/sp2/install/sql.php');
+		
+		$this->db			= $bd_names['sp_skins'];
+		$this->db_ratio		= $bd_names['sp_skins_ratio'];	
 		
 		if (!self::SaveConfigFile()) $this->answer .= 'Ошибка применения настроек <br />';	
 		
