@@ -352,7 +352,7 @@ private $downloads;
 	}
 }
 
-Class SkinManager extends Manager {
+Class SkinManager extends View {
 private $base_url;
 private $url_params;
 private $db;
@@ -362,7 +362,7 @@ private $answer;
     public function SkinManager($style_sd = false, $base_url = 'index.php?mode=skinposer', $url_params = false) {
 	global $bd_names;	
 	
-		parent::Manager($style_sd);
+		parent::View($style_sd);
 	
 		if (isset($bd_names['sp_skins'])) {
 		
