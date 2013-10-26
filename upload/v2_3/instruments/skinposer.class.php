@@ -450,26 +450,6 @@ private $answer;
 	
 	$this->answer .= 'Обновление существующей базы выполнено <br />';
 	}
-			
-	private static function SaveConfigFile() {
-	global $config,$bd_names,$bd_money,$bd_users,$site_ways,$info;
-		
-		$txt  = '<?php'.PHP_EOL;
-		$txt .= '$config = '.var_export($config, true).';'.PHP_EOL;
-		$txt .= '$bd_names = '.var_export($bd_names, true).';'.PHP_EOL;
-		$txt .= '$bd_users = '.var_export($bd_users, true).';'.PHP_EOL;
-		$txt .= '/* iconomy or some other plugin, just check names */'.PHP_EOL;
-		$txt .= '$bd_money = '.var_export($bd_money, true).';'.PHP_EOL;
-		$txt .= '$site_ways = '.var_export($site_ways, true).';'.PHP_EOL;
-		$txt .= '/* Put all new config additions here */'.PHP_EOL;
-		$txt .= '?>';
-
-		$result = file_put_contents(MCR_ROOT.'config.php', $txt);
-
-			if (is_bool($result) and $result == false) return false;		
-	
-	return true;
-	}
 
 	public static function BD_CheckExist($table, $by_column) {
 	
@@ -483,7 +463,7 @@ private $answer;
 
 		if (!isset($menu)) $menu = new Menu();
 		
-		if (!$menu->IsItemExists('skinposer') or !$menu->IsItemExists('sp_admin')) {
+		if ($menu->IsItemExists('skinposer') === false or $menu->IsItemExists('sp_admin') === false) {
 		
 		$tool_sp_btn = array (		
 					'name'			=> 'Образы',
@@ -513,7 +493,8 @@ private $answer;
 		$this->db			= $bd_names['sp_skins'];
 		$this->db_ratio		= $bd_names['sp_skins_ratio'];	
 		
-		if (!self::SaveConfigFile()) $this->answer .= 'Ошибка применения настроек <br />';	
+		loadTool('alist.class.php');
+		if (!MainConfig::SaveOptions()) $this->answer .= 'Ошибка применения настроек <br />';
 		
 		if ($this->answer) return  $this->ShowAdminForm();
 		
@@ -557,7 +538,8 @@ private $answer;
 		
 		if ($bd_skins or $bd_bad_skins or $bd_skins_ratio) $this->answer .= 'Настройки изменены <br />';
 		
-		if (!self::SaveConfigFile()) $this->answer .= 'Ошибка применения настроек <br />';	
+		loadTool('alist.class.php');
+		if (!MainConfig::SaveOptions()) $this->answer .= 'Ошибка применения настроек <br />';	
 		
 		if ($find_items) $this->FindNewSkins();
 		
