@@ -4,7 +4,7 @@
 	
 if (!defined('MCR')) exit;
 
-define('MCR_SP_VER', '1.0'); 
+define('MCR_SP_VER', '1.05'); 
 
 require_once(MCR_ROOT.'instruments/skin.class.php');
 
