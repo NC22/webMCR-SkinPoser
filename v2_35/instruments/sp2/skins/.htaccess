@@ -1,0 +1,3 @@
+<Files *.png>
+Deny from all 
+</Files>

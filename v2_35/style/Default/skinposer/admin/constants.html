@@ -1,0 +1,93 @@
+<form action="index.php" method="post">
+				
+	<input type="hidden" name="do" value="admin" />
+	<input type="hidden" name="mode" value="skinposer" />	
+	
+	<div class="tabbable" style="margin-top: 12px; padding: 10px;">
+
+    <ul class="nav nav-tabs">
+	
+		<li class="active"><a href="#tab1" data-toggle="tab">Инструменты</a></li>
+		<li><a href="#tab2" data-toggle="tab">База данных</a></li>		
+    </ul>
+	
+    <div class="tab-content">
+		
+		<div class="tab-pane active" id="tab1">
+		
+			<label class="checkbox">
+			  <input type="checkbox" name="sp_comments" value="1" <?php echo ($config['sp_comments'])?'checked="checked"':'' ?>> Комментировать образы
+			</label>
+			
+			<label class="checkbox">
+			  <input type="checkbox" name="sp_download" value="1" <?php echo ($config['sp_download'])?'checked="checked"':'' ?>> Скачивать образы
+			</label>
+			
+			<label class="checkbox">
+			  <input type="checkbox" name="sp_offline" value="1" <?php echo (!$config['sp_online'])?'checked="checked"':'' ?>> Закрыть доступ к сервису
+			</label>
+
+			<div class="alert alert-info">
+				Доступ к сервису SkinPoser будет полностью закрыт
+			</div>
+			
+			<label class="checkbox">
+			  <input type="checkbox" name="sp_upload" value="1" <?php echo ($config['sp_upload'])?'checked="checked"':'' ?>> Добавление скинов пользователями (Глобально)
+			</label>		
+			  
+			<label class="checkbox">
+			  
+			  <input type="checkbox" name="rebuild_items" value="1"> Пересоздать существующие скины
+							  
+			</label>
+			
+			<div class="block-line"></div>   
+			
+			<label class="checkbox">
+			  
+			  <input type="checkbox" name="find_items" value="1"> Добавить новые скины из папки ( <?php echo MCR_ROOT.'instruments/sp2/upload/'; ?> )
+							  
+			</label>
+
+			<div class="alert alert-info">
+				При большом количестве изображений может потребоваться время на выполнение операции ( 4 тысячи скинов ~ 3-4 минуты )
+			</div>
+		
+			<label>Тег для новых скинов:</label>
+			
+			<select name="rebuild_type" size="1" class="input-large">
+					<option value="2">Без тега</option>
+					<option value="0">Мужские</option>
+					<option value="1">Женские</option>
+			</select> 				
+		</div>
+		
+		<div class="tab-pane" id="tab2">
+	
+			<label>Таблица skins:</label>
+			<input type="text" name="bd_skins" value="<?php echo $bd_names['sp_skins'] ?>">
+	
+			<label>Таблица bad_skins:</label>
+			<input type="text" name="bd_bad_skins" value="<?php echo $bd_names['sp_bad_skins'] ?>">
+	
+			<label>Таблица skins_ratio:</label>
+			<input type="text" name="bd_skins_ratio" value="<?php echo $bd_names['sp_skins_ratio'] ?>">
+		</div>
+		
+    </div>
+	
+	<button name="sp_config_set" type="submit" class="btn">Применить</button>
+	
+	</div>	
+	
+</form>
+
+<?php if ($info) { ?>
+
+	<div class="alert alert-warn">
+
+		<?php echo $info ?>
+		
+	</div>
+	
+<?php } ?>

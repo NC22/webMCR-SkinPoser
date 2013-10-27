@@ -1,0 +1,24 @@
+	<div id="hd-box" class="form-block" style="width:auto; padding-top: 12px;">
+	
+		<form id="hd-form" class="form-inline" method="get" action="index.php" style="height: 10px;" >
+		
+			<input type="hidden" name="mode" value="skinposer" />
+			
+			Сортировка:
+			
+			<select name="method" size="1" class="input-large">
+					<option value="1" <?php echo ($order_by == 'id')? 'selected="selected"' : ''; ?>>По порядку добавления</option>
+					<option value="2" <?php echo ($order_by == 'likes')? 'selected="selected"' : ''; ?>>По рейтингу</option>
+			</select>
+			<select name="sort" size="1" class="input-large">
+					<option value="1" <?php echo ($sort == 1)? 'selected="selected"' : ''; ?>>По возрастанию</option>
+					<option value="2" <?php echo ($sort == 2)? 'selected="selected"' : ''; ?>>По убыванию</option>
+			</select>	
+			
+			<input name="skins_per_page" class="input-mini" type="text" placeholder="Кол-во:" />
+			
+			<input id="hd-button" type="submit" class="btn" value="Изменить" />
+			
+		</form>
+		
+	</div>
