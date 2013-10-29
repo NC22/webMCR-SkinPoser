@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS `sp_skins` (
   `downloads` int(10) DEFAULT 0,
   `ratio` smallint(3) NOT NULL DEFAULT 1,
   `gender` tinyint(1) NOT NULL DEFAULT 2,
+  `comments` int(10) NOT NULL DEFAULT 0,
   `fsize` char(32) DEFAULT 0,
   `hash` char(32) DEFAULT NULL,
   PRIMARY KEY (`id`),
