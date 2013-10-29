@@ -8,7 +8,8 @@
     <ul class="nav nav-tabs">
 	
 		<li class="active"><a href="#tab1" data-toggle="tab">Инструменты</a></li>
-		<li><a href="#tab2" data-toggle="tab">База данных</a></li>		
+		<li><a href="#tab2" data-toggle="tab">База данных</a></li>	
+		<li><a href="#tab3" data-toggle="tab">Пакетное добавление скинов</a></li>			
     </ul>
 	
     <div class="tab-content">
@@ -41,7 +42,21 @@
 							  
 			</label>
 			
-			<div class="block-line"></div>   
+		</div>
+		
+		<div class="tab-pane" id="tab2">
+	
+			<label>Таблица skins:</label>
+			<input type="text" name="bd_skins" value="<?php echo $bd_names['sp_skins'] ?>">
+	
+			<label>Таблица bad_skins:</label>
+			<input type="text" name="bd_bad_skins" value="<?php echo $bd_names['sp_bad_skins'] ?>">
+	
+			<label>Таблица skins_ratio:</label>
+			<input type="text" name="bd_skins_ratio" value="<?php echo $bd_names['sp_skins_ratio'] ?>">
+		</div>
+		
+		<div class="tab-pane" id="tab3">
 			
 			<label class="checkbox">
 			  
@@ -59,21 +74,9 @@
 					<option value="2">Без тега</option>
 					<option value="0">Мужские</option>
 					<option value="1">Женские</option>
-			</select> 				
-		</div>
-		
-		<div class="tab-pane" id="tab2">
-	
-			<label>Таблица skins:</label>
-			<input type="text" name="bd_skins" value="<?php echo $bd_names['sp_skins'] ?>">
-	
-			<label>Таблица bad_skins:</label>
-			<input type="text" name="bd_bad_skins" value="<?php echo $bd_names['sp_bad_skins'] ?>">
-	
-			<label>Таблица skins_ratio:</label>
-			<input type="text" name="bd_skins_ratio" value="<?php echo $bd_names['sp_skins_ratio'] ?>">
-		</div>
-		
+			</select> 
+			
+		</div>		
     </div>
 	
 	<button name="sp_config_set" type="submit" class="btn">Применить</button>

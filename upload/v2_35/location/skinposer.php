@@ -49,6 +49,17 @@ if ((!empty($_POST['do']) or !empty($_GET['do'])) and !empty($user)) {
 			else aExit(2);
 			 
 		break;	
+		case 'download':
+		
+			if (empty($_GET['cid'])) { header("Location: ".BASE_URL); exit; }
+
+			$skin_id = (int) $_GET['cid'];
+			$sp_item = new SPItem($skin_id);
+			
+			if (!$sp_item->Download()) header("Location: ".BASE_URL);
+			exit;  			
+			 
+		break;	
 		case 'get':
 		
 			if (empty($_POST['skin_id'])) aExit(1);	

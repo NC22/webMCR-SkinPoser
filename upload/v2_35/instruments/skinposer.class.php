@@ -269,6 +269,24 @@ private $user_id;
 		return $like->Like($dislike);
 	}
 	
+	public function Download(){
+	
+		if (!$this->Exist()) return false;
+	
+		header('Content-Type: image/png');
+		header('Cache-Control:no-cache, must-revalidate'); 		
+		header('Expires:0'); 		
+		header('Pragma:no-cache'); 	
+		header('Content-Length:'.filesize($this->base_dir.$this->fname)); 
+		header('Content-Disposition: attachment; filename="'.$this->fname.'"'); 
+		header('Content-Transfer-Encoding:binary');
+		
+		BD("UPDATE `{$this->db}` SET `downloads` = downloads + 1 WHERE `id`='".$this->id."'");	
+		
+		readfile($this->base_dir.$this->fname);
+		return true;			
+	}
+	
 	public function getInfo() {
 		if (!$this->Exist()) return false; 
 		
@@ -375,6 +393,7 @@ private $db;
 private $db_ratio;
 
 private $discus;
+private $download;
 private $answer;
 
     public function SkinManager($style_sd = false, $base_url = 'index.php?mode=skinposer', $url_params = false) {
@@ -387,6 +406,7 @@ private $answer;
 			$this->db			= $bd_names['sp_skins'];
 			$this->db_ratio		= $bd_names['sp_skins_ratio'];
 			
+			$this->download		= $config['sp_download'];
 			$this->discus		= $config['sp_comments'];
 			
 		} else
@@ -447,7 +467,7 @@ private $answer;
 		}
 	closedir($skin_dir); 
 	
-	$this->answer .= 'Добавление файлов завершено. <br /> Добавлены: '.$skin_add.' Проигнорированы: Черный список: ' . $skin_black . ' Дубликаты: ' .$skin_exist. ' Ошибки: '. $skin_error;	
+	$this->answer .= 'Добавление файлов завершено. <br /> Добавлены: '.$skin_add.' <br /> Проигнорированы: <br />  Черный список: ' . $skin_black . ' Дубликаты: ' .$skin_exist. ' Ошибки: '. $skin_error;	
 	}
 	
 	public function RebuildAll() {
@@ -671,6 +691,8 @@ private $answer;
 		$skin_size	= $skin_info['size'];
 		
 		if ($skin_size <= 0) $skin_size = '< 0.01';
+		
+		$skin_download = $this->download;
 		
 		ob_start(); 
 		include $this->GetView('skin_info.html'); 
