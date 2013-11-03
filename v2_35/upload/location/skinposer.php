@@ -1,6 +1,6 @@
 <?php if (!defined('MCR')) exit;
 
-$installed  = (isset($bd_names['sp_skins']))? true : false;
+$installed  = (isset($config['sp_skins']))? true : false;
 $user_admin = (!empty($user) and $user->group() == 3) ? true : false;
 $user_lvl 	= (!empty($user)) ? $user->lvl() : -1;
 
