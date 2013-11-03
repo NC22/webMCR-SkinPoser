@@ -68,8 +68,15 @@
 		
 		<div class="skin-bottom">
 				<a class="skin-link" style="width: 80px;" href="index.php?mode=skinposer&amp;cid=<?php echo $skin_id ?>">
-				
+					
+					<?php if ($skin_comment_today) { ?>
+					
+						(<span style="color: #36a24a">+</span>)
+					
+					<?php } ?>
+					
 					<img style="vertical-align: middle; margin-bottom: 2px;" src="<?php View::URL('img/comment.png') ?>" alt="Комментарии" width="12" height="12"/>
+					
 					<?php echo $skin_comments ?>
 					
 				</a>

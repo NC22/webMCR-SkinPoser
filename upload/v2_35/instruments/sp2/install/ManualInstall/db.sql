@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS `sp_skins` (
   `ratio` smallint(3) NOT NULL DEFAULT 1,
   `gender` tinyint(1) NOT NULL DEFAULT 2,
   `comments` int(10) NOT NULL DEFAULT 0,
+  `comment_last` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `fsize` char(32) DEFAULT 0,
   `hash` char(32) DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -28,3 +29,6 @@ CREATE TABLE IF NOT EXISTS `sp_skins_ratio` (
   `num` int(10) DEFAULT 1,
   PRIMARY KEY (`ratio`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+
+UPDATE `groups` SET `sp_upload`='1',`sp_change`='1' WHERE `id`='3';
+UPDATE `groups` SET `sp_upload`='0',`sp_change`='1' WHERE `id`='1';

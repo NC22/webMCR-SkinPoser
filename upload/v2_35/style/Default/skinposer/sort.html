@@ -6,9 +6,13 @@
 			
 			Сортировка:
 			
-			<select name="method" size="1" class="input-large">
-					<option value="1" <?php echo ($order_by == 'id')? 'selected="selected"' : ''; ?>>По порядку добавления</option>
-					<option value="2" <?php echo ($order_by == 'likes')? 'selected="selected"' : ''; ?>>По рейтингу</option>
+			<select name="order_by" size="1" class="input-large">
+				<?php if ($this->discus) { ?>
+					<option value="comment_last" <?php echo ($order_by == 'comment_last')? 'selected="selected"' : ''; ?>>По новым комментариям</option>
+					<option value="comments" <?php echo ($order_by == 'comments')? 'selected="selected"' : ''; ?>>По кол-ву комментариев</option>
+				<?php } ?>
+					<option value="id" <?php echo ($order_by == 'id')? 'selected="selected"' : ''; ?>>По порядку добавления</option>
+					<option value="likes" <?php echo ($order_by == 'likes')? 'selected="selected"' : ''; ?>>По рейтингу</option>
 			</select>
 			<select name="sort" size="1" class="input-large">
 					<option value="1" <?php echo ($sort == 1)? 'selected="selected"' : ''; ?>>По возрастанию</option>

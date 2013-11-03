@@ -12,6 +12,7 @@ BD("CREATE TABLE IF NOT EXISTS `{$bd_names['sp_skins']}` (
   `gender` tinyint(1) NOT NULL DEFAULT 2,
   `fsize` char(32) DEFAULT 0,
   `comments` int(10) NOT NULL DEFAULT 0,
+  `comment_last` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `hash` char(32) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
@@ -31,13 +32,25 @@ BD("CREATE TABLE IF NOT EXISTS `{$bd_names['sp_skins_ratio']}` (
   PRIMARY KEY (`ratio`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;");
 
-BD("ALTER TABLE `{$bd_names['groups']}` DROP `skinposer`;"); // drop depricated field
+if (self::BD_CheckExist($bd_names['groups'], 'skinposer')) 
+
+	BD("ALTER TABLE `{$bd_names['groups']}` DROP `skinposer`;"); // depricated field
  
-BD("ALTER TABLE `{$bd_names['groups']}`	ADD `sp_upload` tinyint(1) NOT NULL DEFAULT 0;");
-BD("ALTER TABLE `{$bd_names['groups']}`	ADD `sp_change` tinyint(1) NOT NULL DEFAULT 0;");
+if (!self::BD_CheckExist($bd_names['groups'], 'sp_upload')) 
+
+	BD("ALTER TABLE `{$bd_names['groups']}`	ADD `sp_upload` tinyint(1) NOT NULL DEFAULT 0;");
+
+if (!self::BD_CheckExist($bd_names['groups'], 'sp_change'))
+
+	BD("ALTER TABLE `{$bd_names['groups']}`	ADD `sp_change` tinyint(1) NOT NULL DEFAULT 0;");
+ 
+if (!self::BD_CheckExist($bd_names['sp_skins'], 'comments')) 
+
+	BD("ALTER TABLE `{$bd_names['sp_skins']}` ADD `comments` int(10) NOT NULL DEFAULT 0;");
+	
+if (!self::BD_CheckExist($bd_names['sp_skins'], 'comment_last')) 
+
+	BD("ALTER TABLE `{$bd_names['sp_skins']}` ADD `comment_last` datetime NOT NULL DEFAULT '0000-00-00 00:00:00';");
 	
 BD("UPDATE `{$bd_names['groups']}` SET `sp_upload`='1',`sp_change`='1' WHERE `id`='3'");
 BD("UPDATE `{$bd_names['groups']}` SET `sp_upload`='0',`sp_change`='1' WHERE `id`='1'");
-
-BD("ALTER TABLE `{$bd_names['sp_skins']}` ADD `comments` int(10) NOT NULL DEFAULT 0;");
-

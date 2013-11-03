@@ -149,11 +149,11 @@ if ( $ratio > 1 ) $url_params .= '&ratio='.$ratio;
 if ( $gender != $gender_base ) $url_params .= '&type='.$gender;  
 
 if (!isset($_SESSION['show_mode']))    $_SESSION['show_mode'] = 2; 
-if (!isset($_SESSION['method_mode']))  $_SESSION['method_mode'] = 2; 
+if (!isset($_SESSION['order_by']))  $_SESSION['order_by'] = 2; 
 if (!isset($_SESSION['num_per_page'])) $_SESSION['num_per_page'] = 24; 
 
 if (!empty($_GET['sort']))            $_SESSION['show_mode'] 	= (int) $_GET['sort'];
-if (!empty($_GET['method']))	      $_SESSION['method_mode']  = (int) $_GET['method'];
+if (!empty($_GET['order_by']))	      $_SESSION['order_by']  = $_GET['order_by'];
 if (!empty($_GET['skins_per_page']))  $_SESSION['num_per_page'] = (int) $_GET['skins_per_page'];
 
 if ( $_SESSION['num_per_page'] > 100 ) $_SESSION['num_per_page'] = 100;
@@ -199,11 +199,9 @@ if ($conf_info and $user_admin) {
 			$content_main .= $skin_manager->ShowAddForm();
 		
 	if ($user_admin) $content_main .=  $skin_manager->ShowSPStateInfo();
-	
-	$order_by = ($_SESSION['method_mode'] == 1)? 'id' : 'likes';
-		
-	$content_main .= $skin_manager->ShowSkinList($curlist, $_SESSION['num_per_page'], $gender, $order_by, $_SESSION['show_mode'], $mode, $ratio);
 
-	$content_main .= $skin_manager->ShowSortTypeSelector($order_by, $_SESSION['show_mode']);	
+	$content_main .= $skin_manager->ShowSkinList($curlist, $_SESSION['num_per_page'], $gender, $_SESSION['order_by'], $_SESSION['show_mode'], $mode, $ratio);
+
+	$content_main .= $skin_manager->ShowSortTypeSelector($_SESSION['order_by'], $_SESSION['show_mode']);	
 	$content_side .= $skin_manager->ShowSideMenu($gender, $ratio);
 }

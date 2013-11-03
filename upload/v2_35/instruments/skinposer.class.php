@@ -10,6 +10,7 @@ require_once(MCR_ROOT.'instruments/skin.class.php');
 
 Class SPItem extends Item {
 private $comments;
+private $comment_last;
 
 private $db_likes;
 private $db_bad_skins;
@@ -45,7 +46,7 @@ private $user_id;
 		
 		if (!$this->id ) return false;
 		
-		$result = BD("SELECT `name`, `fname`, `fsize`, `dislikes`, `likes`, `ratio`, `gender`, `downloads`, `comments`, `user_id`  FROM `{$this->db}` WHERE `id`='". $this->id ."'"); 
+		$result = BD("SELECT `name`, `fname`, `fsize`, `dislikes`, `likes`, `ratio`, `gender`, `downloads`, `comments`, `user_id`, `comment_last`  FROM `{$this->db}` WHERE `id`='". $this->id ."'"); 
 		
 		if ( mysql_num_rows( $result ) != 1 ) {
 		
@@ -65,22 +66,25 @@ private $user_id;
 		$this->downloads	= (int)$line[7];
 		$this->comments	    = (int)$line[8];
 		$this->user_id	    = (int)$line[9];
+		$this->comment_last = ( $line[10] === '0000-00-00 00:00:00' )? false : $line[10];
 	}	
 	
 	public function OnComment() {
 	
 		if ( !$this->Exist()) return false;
 		
-		BD("UPDATE `{$this->db}` SET `comments` = comments + 1 WHERE `id`='". $this->id ."'");	
+		$this->comment_last = date("Y-m-d H:i:s");
 		$this->comments++;
+		
+		BD("UPDATE `{$this->db}` SET `comments` = '".$this->comments."', `comment_last` = '".$this->comment_last."' WHERE `id`='". $this->id ."'");			
 	}
 	
 	public function OnDeleteComment() {
 	
 		if ( !$this->Exist()) return false;
-		
-		BD("UPDATE `{$this->db}` SET `comments` = comments - 1 WHERE `id`='". $this->id ."'");	
 		$this->comments--;
+		
+		BD("UPDATE `{$this->db}` SET `comments` = '".$this->comments."' WHERE `id`='". $this->id ."'");			
 	}
 	
 	public function Create($post_name, $gender = 2, $max_size = 20, $max_ratio = 1, $del_blist = false, $method = 'post') {
@@ -321,6 +325,7 @@ private $user_id;
 	} else $available = false;
 
 		$skin_comments = $this->comments;
+		$skin_comment_today = ($this->comment_last and date('Ymd') == date('Ymd', strtotime($this->comment_last)) ) ? true : false;
 		
 		$skin_info = $this->getInfo();
 		
@@ -736,15 +741,25 @@ private $answer;
 	return $this->ShowById((int)$line[0]);	
 	}	
 	
-	public function ShowSkinList($list = 1, $per_page = 20, $gender = 2, $order_by = 'id', $sort = 1, $mode = 'base', $ratio = 1) {
+	public function ShowSkinList($list = 1, $per_page = 20, $gender = 2, $order_by = false, $sort = 1, $mode = 'base', $ratio = 1) {
 	global $user;		
 		
 			$list = (int) $list;
 		if ($list <= 0) $list = 1; 
 			$ratio = (int) $ratio;
 		if (($ratio < 1 or $ratio > 64) and $ratio != 1337 and $ratio != 31337) return '';		
+
+		switch ($order_by) {
+			case 'id': $order_by = 'id'; break;
+			case 'likes': $order_by = 'likes'; break;
+			case 'comment_last': $order_by = 'comment_last'; break;
+			case 'comments': $order_by = 'comments'; break;
+			default : 				
+				if ($this->discus) $order_by = 'comment_last';
+				else $order_by = 'id'; 				
+			break;
+		}
 		
-		$order_by 	= ($order_by == 'id')? 'id' : 'likes';
 		$sort		= ($sort == 2)? 'DESC' : '';	
 	
 		// echo '['.$list.' |'.$per_page.' |'.$gender.' |'.$order_by.' |'.$sort.' |'.$mode.' |'.$ratio.']';
@@ -799,11 +814,11 @@ private $answer;
 		if (!$skins_count) $html_skin_list = $this->ShowPage('skin_empty.html');
 		else {
 		
-			if ($mode != 'likes')
+			if ($mode != 'likes') {
 			
 			$result = BD("SELECT `id` FROM `".$this->db."` ".$base_sql." ORDER BY `$order_by` $sort LIMIT ".($per_page*($list-1)).",$per_page");
-			
-			else {
+
+			} else {
 
 			$sql = 	"SELECT `item_id` AS 'id' ";
 			$sql .= "FROM `".$this->db."` LEFT JOIN `".$this->db_likes."` ON ".$this->db.".id = ".$this->db_likes.".item_id ";
