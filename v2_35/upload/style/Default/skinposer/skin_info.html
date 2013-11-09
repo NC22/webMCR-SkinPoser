@@ -10,12 +10,15 @@
 
 <a class="news-link" style="font-size: 16px;" href="index.php?mode=skinposer&amp;cid=<?php echo $skin_info['id'] ?>&amp;do=download"> Скачать </a>
 
+<?php } if ($available and $skin_download) { ?>
+
 &nbsp;|&nbsp; 
 
-<?php } ?>
+<?php } if ($available) { ?>
 
 <a class="news-link" style="font-size: 16px;" href="#" onclick="ApplyForm(<?php echo $skin_info['id'] ?>); return false"> Установить </a>
 
+<?php } ?>
 </p>
 
 </div>	

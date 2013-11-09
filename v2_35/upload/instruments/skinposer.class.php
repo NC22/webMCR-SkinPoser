@@ -31,7 +31,7 @@ private $downloads;
 private $user_id;
 
 	public function __construct($id = false, $style_sd = false) {
-	global $bd_names, $site_ways;	
+	global $bd_names, $site_ways, $config;	
 	
 		parent::__construct($id, ItemType::Skin, $bd_names['sp_skins'], $style_sd);
 				
@@ -304,14 +304,14 @@ private $user_id;
 						'ratio'		=> $this->ratio );		
 	}	
 	
-	public function Show($show_comments = false) {
+	public function Show($show_comments = true, $full_info = false) {
 	global $config, $user;
 	
 	if (!$this->Exist()) return '';
 
 	$available = true;
 	$admin = false;
-	
+
 	if (!empty($user)) {
 		
 		$female = $user->isFemale();
@@ -324,9 +324,12 @@ private $user_id;
 		
 	} else $available = false;
 
+	if ( $show_comments ) {
+	
 		$skin_comments = $this->comments;
 		$skin_comment_today = ($this->comment_last and date('Ymd') == date('Ymd', strtotime($this->comment_last)) ) ? true : false;
-		
+	}
+	
 		$skin_info = $this->getInfo();
 		
 		$skin_id 	= $skin_info['id'];
@@ -348,6 +351,12 @@ private $user_id;
 		$skin_preview = $this->base_url.'preview/'.$this->base_name.$skin_id.'.png';
 		
 		ob_start(); include $this->GetView('skin.html');
+		
+		if ( $full_info ) {
+					
+			$skin_download	= $config['sp_download'];
+			include $this->GetView('skin_info.html'); 
+		}
 		
 	return ob_get_clean();
 	}
@@ -688,37 +697,21 @@ private $answer;
 		if (!$skin->Exist()) $html_skin_list = 'Скин удален'; 
 		else {
 		
-			$gender_txt = ($skin->isFemaleSkin())? lng('FEMALE') : lng('MALE');			
-			$skins = $skin->Show(false);			
-		
-		$skin_info = $skin->getInfo();
-		$skin_ratio	= (64*$skin_info['ratio']).'x'.(32*$skin_info['ratio']);
-		$skin_size	= $skin_info['size'];
-		
-		if ($skin_size <= 0) $skin_size = '< 0.01';
-		
-		$skin_download = $this->download;
-		
-		ob_start(); 
-		include $this->GetView('skin_info.html'); 
-		
-		$skins .= ob_get_clean();
-	
-		if ( $this->discus ) {
-		
-			loadTool('comment.class.php');
+			$skins = $skin->Show(false, $full_info = true);
 
-			$comments = new CommentList($skin, $this->base_url . '&cid=' . $id, 'news/comments/');
-			$html_comments = $comments->Show($list);
-		
-			$html_comments .= $comments->ShowAddForm();		
-		}
-		
 		ob_start(); include $this->GetView('skin_container.html'); 
 		
-		$html_skin_list = ob_get_clean();
-		
-		if ( $this->discus ) $html_skin_list .= $html_comments;
+		$html_skin_list = ob_get_clean();			
+
+			if ( $this->discus ) {
+			
+				loadTool('comment.class.php');
+
+				$comments = new CommentList($skin, $this->base_url . '&cid=' . $id, 'news/comments/');
+				$html_skin_list .= $comments->Show($list);
+			
+				$html_skin_list .= $comments->ShowAddForm();		
+			}
 		}
 		
 		ob_start(); 
