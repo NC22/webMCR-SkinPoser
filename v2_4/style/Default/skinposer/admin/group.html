@@ -1,0 +1,23 @@
+<form action="index.php" method="post">
+
+    <input type="hidden" name="do" value="admin" />
+    <input type="hidden" name="mode" value="skinposer" />
+    <input type="hidden" name="group" value="<?php echo $group['id'] ?>" />
+    
+    <legend>Настройки группы [<?php echo $group['name'] ?>]</legend>
+    
+    <label class="checkbox">
+        <input type="checkbox" name="sp_upload" value="1" <?php echo ($group['sp_upload'])?'checked="checked"':'' ?>> Добавление изображений в галерею
+    </label>
+
+    <label class="checkbox">
+        <input type="checkbox" name="sp_change" value="1" <?php echo ($group['sp_change'])?'checked="checked"':'' ?>> Смена образа через галерею
+    </label>
+    
+    <label class="checkbox">
+        <input type="checkbox" name="sp_download" value="1" <?php echo ($group['sp_download'])?'checked="checked"':'' ?>> Скачивание образа через галерею
+    </label>
+    
+    <button name="sp_group_edit" type="submit" class="btn">Применить</button>
+
+</form>

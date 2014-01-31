@@ -1,0 +1,87 @@
+<div id="skin-<?php echo $skin_id ?>" class="skin-info">
+
+    <div class="blackBox">
+
+        <b><?php echo $skin_ratio ?></b> (<?php echo $skin_size ?>мб) <br />
+        Загрузок: <?php echo $skin_downloads ?>
+
+    </div>
+
+    <div class="skin-info-likes">
+
+        <a href="#" onclick="return Like(0, <?php echo $skin_id ?> , <?php echo ItemType::Skin ?> )">
+
+            <img class="like" src="<?php echo View::GetUrl('skinposer/img/dislike.png') ?>" alt="Нравится" />
+
+        </a>
+
+        <div id="like<?php echo $skin_id; ?>type<?php echo ItemType::Skin ?>" class="textVar"><?php echo $skin_likes ?></div>
+
+        <a href="#" onclick="return Like(1, <?php echo $skin_id; ?> , <?php echo ItemType::Skin ?> )">
+
+            <img src="<?php echo View::GetUrl('skinposer/img/dislike.png') ?>" alt="Не нравится" />
+
+        </a>
+
+        <div id="dislike<?php echo $skin_id ?>type<?php echo ItemType::Skin ?>" class="textVar"><?php echo $skin_dislikes ?></div>
+
+        <?php if ($available) { ?>
+
+        <a href="#" onclick="ApplyForm( <?php echo $skin_id ?> ); return false">
+
+            <img src="<?php echo View::GetUrl('skinposer/img/download.png') ?>" alt="Установить" />
+
+        </a>
+
+        <?php } ?>
+
+        <?php if ($admin) { ?>
+
+        <a id="skin-change-gender-<?php echo $skin_id ?>" href="#" onclick="SetGenderSkin(<?php echo $skin_id ?> , <?php echo $skin_gender ?> ); return false" >
+
+            <img id="skin-gender-<?php echo $skin_id ?>" src="<?php echo View::GetUrl('skinposer/img/gender_'.$skin_gender.'.png') ?>" height="9" width="9" alt="Сменить пол" />
+
+        </a>	
+
+        <a href="#" onclick="DeleteSkin( <?php echo $skin_id ?> ); return false" >
+
+            <img src="<?php echo View::GetUrl('skinposer/img/drop.png') ?>" height="9" width="9" alt="Удалить" />
+
+        </a>	
+
+        <?php } ?>
+    </div>
+
+    <a href="index.php?mode=skinposer&amp;cid=<?php echo $skin_id ?>">
+        <div class="skin-info-self" style="background:url(<?php echo $skin_preview ?>); display: block; position: relative; width:80px; height:160px;" onmouseover="this.style.backgroundPosition = &quot; 80px 0px &quot;" onmouseout="this.style.backgroundPosition = &quot; 0px 0px &quot;">
+
+            <?php if ($skin_gender == 1) { ?>
+
+            <img class="female" src="<?php View::URL('img/ribbon.png') ?>" alt="Женский">
+
+            <?php } ?>
+
+        </div>
+    </a>
+
+    <?php if ($show_comments) { ?>
+
+    <div class="skin-bottom">
+        <a class="skin-link" style="width: 80px;" href="index.php?mode=skinposer&amp;cid=<?php echo $skin_id ?>">
+
+            <?php if ($skin_comment_today) { ?>
+
+            (<span style="color: #36a24a">+</span>)
+
+            <?php } ?>
+
+            <img style="vertical-align: middle; margin-bottom: 2px;" src="<?php View::URL('img/comment.png') ?>" alt="Комментарии" width="12" height="12"/>
+
+            <?php echo $skin_comments ?>
+
+        </a>
+    </div>
+
+    <?php } ?>
+
+</div>	

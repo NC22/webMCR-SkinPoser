@@ -1,0 +1,31 @@
+	<div class="mCategory">
+		<a href="<?php echo $this->base_url ?>&ratio=807" class="news-link">?</a> 
+		<a href="<?php echo $this->base_url ?>&ratio=31337" class="news-link">Понравившееся</a> 
+		<a href="<?php echo $this->base_url ?>" class="news-link">Классика</a> 
+		<a href="#" onclick="BlockVisible('filter-box'); return false;" class="news-link">Фильтры</a>
+		
+	</div>
+
+	<div id="filter-box" class="form-block" style="width:auto; display: none;">
+	
+	<div class="block-header">Фильтры:</div>
+
+	<div class="block-line"></div>
+	
+		<form id="filter-form" method="get" action="index.php" style="text-align: center; margin-bottom: -10px;">
+		
+			<input type="hidden" name="mode" value="skinposer" />
+
+			<select name="ratio" size="1" class="input-large">
+					<option value="1337">Все HD образы</option>
+					<?php echo $ratio_list; ?>
+			</select>		
+			
+			<select name="type" size="1" class="input-large">
+					<?php echo $gender_list; ?>
+			</select>
+					
+			<p><input id="hd-button" type="submit" class="btn" value="Выбрать" /></p>
+		</form>
+		
+	</div>
