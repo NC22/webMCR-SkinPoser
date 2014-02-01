@@ -567,16 +567,7 @@ Class SkinManager extends View
 
         $this->answer .= 'Обновление существующей базы выполнено <br />';
     }
-
-    public static function BD_CheckExist($table, $by_column)
-    {
-
-        if (@mysql_query("SELECT `$by_column` FROM `$table` LIMIT 0, 1"))
-            return true;
-
-        return false;
-    }
-
+    
     public function TryAutoConfigure()
     {
         global $config, $bd_names, $menu;
@@ -673,19 +664,19 @@ Class SkinManager extends View
             $config['sp_comments'] = $sp_comments;
 
             if ($bd_skins)
-                if (!self::BD_CheckExist($bd_skins, 'fname'))
+                if (!getDB()->isColumnExist($bd_skins, 'fname'))
                     $this->answer .= 'Таблица не найдена ( ' . $bd_skins . ' )  <br />';
                 else
                     $bd_names['sp_skins'] = $bd_skins;
 
             if ($bd_bad_skins)
-                if (!self::BD_CheckExist($bd_bad_skins, 'hash'))
+                if (!getDB()->isColumnExist($bd_bad_skins, 'hash'))
                     $this->answer .= 'Таблица не найдена ( ' . $bd_bad_skins . ' )  <br />';
                 else
                     $bd_names['sp_bad_skins'] = $bd_bad_skins;
 
             if ($bd_skins_ratio)
-                if (!self::BD_CheckExist($bd_skins_ratio, 'num'))
+                if (!getDB()->isColumnExist($bd_skins_ratio, 'num'))
                     $this->answer .= 'Таблица не найдена ( ' . $bd_skins_ratio . ' )  <br />';
                 else
                     $bd_names['sp_skins_ratio'] = $bd_skins_ratio;
