@@ -30,5 +30,9 @@ CREATE TABLE IF NOT EXISTS `sp_skins_ratio` (
   PRIMARY KEY (`ratio`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
 
-UPDATE `groups` SET `sp_upload`='1',`sp_change`='1' WHERE `id`='3';
-UPDATE `groups` SET `sp_upload`='0',`sp_change`='1' WHERE `id`='1';
+ALTER TABLE `groups` ADD `sp_download` tinyint(1) NOT NULL DEFAULT 0;
+ALTER TABLE `groups` ADD `sp_upload` tinyint(1) NOT NULL DEFAULT 0;
+ALTER TABLE `groups` ADD `sp_change` tinyint(1) NOT NULL DEFAULT 0;
+
+UPDATE `groups` SET `sp_upload`='1',`sp_change`='1',`sp_download`='1' WHERE `id`='3';
+UPDATE `groups` SET `sp_upload`='0',`sp_change`='1',`sp_download`='1' WHERE `id`='1';

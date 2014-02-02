@@ -32,27 +32,27 @@ BD("CREATE TABLE IF NOT EXISTS `{$bd_names['sp_skins_ratio']}` (
   PRIMARY KEY (`ratio`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;");
 
-if (self::BD_CheckExist($bd_names['groups'], 'skinposer')) 
+if (getDB()->isColumnExist($bd_names['groups'], 'skinposer')) 
 
 	BD("ALTER TABLE `{$bd_names['groups']}` DROP `skinposer`;"); // depricated field
  
-if (!self::BD_CheckExist($bd_names['groups'], 'sp_upload')) 
+if (!getDB()->isColumnExist($bd_names['groups'], 'sp_upload')) 
 
 	BD("ALTER TABLE `{$bd_names['groups']}`	ADD `sp_upload` tinyint(1) NOT NULL DEFAULT 0;");
 
-if (!self::BD_CheckExist($bd_names['groups'], 'sp_change'))
+if (!getDB()->isColumnExist($bd_names['groups'], 'sp_change'))
 
 	BD("ALTER TABLE `{$bd_names['groups']}`	ADD `sp_change` tinyint(1) NOT NULL DEFAULT 0;");
         
-if (!self::BD_CheckExist($bd_names['groups'], 'sp_download'))
+if (!getDB()->isColumnExist($bd_names['groups'], 'sp_download'))
 
        BD("ALTER TABLE `{$bd_names['groups']}`	ADD `sp_download` tinyint(1) NOT NULL DEFAULT 0;");
        
-if (!self::BD_CheckExist($bd_names['sp_skins'], 'comments')) 
+if (!getDB()->isColumnExist($bd_names['sp_skins'], 'comments')) 
 
 	BD("ALTER TABLE `{$bd_names['sp_skins']}` ADD `comments` int(10) NOT NULL DEFAULT 0;");
 	
-if (!self::BD_CheckExist($bd_names['sp_skins'], 'comment_last')) 
+if (!getDB()->isColumnExist($bd_names['sp_skins'], 'comment_last')) 
 
 	BD("ALTER TABLE `{$bd_names['sp_skins']}` ADD `comment_last` datetime NOT NULL DEFAULT '0000-00-00 00:00:00';");
 	
