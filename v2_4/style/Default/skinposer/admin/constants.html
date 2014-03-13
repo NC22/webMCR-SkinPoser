@@ -5,7 +5,7 @@
         <li class="active"><a href="#tab1" data-toggle="tab">Инструменты</a></li>
         <li><a href="#tab2" data-toggle="tab">База данных</a></li>	
         <li><a href="#tab3" data-toggle="tab">Пакетное добавление скинов</a></li>	
-        <li><a href="#tab4" data-toggle="tab">Группы</a></li>
+        <li><a href="#tab4" data-toggle="tab">Права групп</a></li>
     </ul>
 
     <div class="tab-content">
@@ -64,7 +64,7 @@
                 <label>Таблица skins_ratio:</label>
                 <input type="text" name="bd_skins_ratio" value="<?php echo $bd_names['sp_skins_ratio'] ?>">
                 <br>    
-                <button name="sp_config_set" type="submit" class="btn">Применить</button>
+                <button name="sp_tables_set" type="submit" class="btn">Применить</button>
 
             </form>  
         </div>
@@ -93,12 +93,15 @@
                 </select> 
 
                 <br>
-                <button name="sp_config_set" type="submit" class="btn">Применить</button>
+                <button name="sp_upload_set" type="submit" class="btn">Применить</button>
 
             </form>
         </div>
 
         <div class="tab-pane" id="tab4">
+            <div class="alert alert-info">
+               Настройки допустимого размера файла и разрешения изображения наследуются из стандартных настроек групп
+            </div>
             <?php echo $groups ?>			
         </div>
     </div>

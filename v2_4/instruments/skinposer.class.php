@@ -12,13 +12,16 @@ require_once(MCR_ROOT . 'instruments/skin.class.php');
 
 Class SPItem extends Item
 {
+    const BASE_NAME = 'sp_nc';
+    
+    private $base_dir;
+    private $base_url;
+    
     private $comments;
     private $comment_last;
     private $db_likes;
     private $db_bad_skins;
     private $db_ratio;
-    private $base_dir;
-    private $base_name;
     private $name;
     private $fname;
     private $fsize;
@@ -31,43 +34,32 @@ Class SPItem extends Item
 
     public function __construct($id = false, $style_sd = false)
     {
-        global $bd_names, $site_ways, $config;
+        global $bd_names, $site_ways;
 
         parent::__construct($id, ItemType::Skin, $bd_names['sp_skins'], $style_sd);
 
-        $this->base_dir = MCR_ROOT . 'instruments/sp2/skins/';
-        $this->base_url = 'instruments/sp2/skins/';
-        $this->base_name = 'sp_nc';
-
+        $this->base_dir = MCR_ROOT . $site_ways['sp_dir'] . 'skins/';
+        $this->base_url = $site_ways['sp_skins'];
         $this->db_likes = $bd_names['likes'];
-
         $this->db_bad_skins = $bd_names['sp_bad_skins'];
         $this->db_ratio = $bd_names['sp_skins_ratio'];
-
-        if (!$this->id)
-            return false;
-
-        $result = BD("SELECT `name`, `fname`, `fsize`, `dislikes`, `likes`, `ratio`, `gender`, `downloads`, `comments`, `user_id`, `comment_last`  FROM `{$this->db}` WHERE `id`='" . $this->id . "'");
-
-        if (mysql_num_rows($result) != 1) {
-
-            $this->id = false;
-            return false;
-        }
-
-        $line = mysql_fetch_array($result, MYSQL_NUM);
-
-        $this->name = $line[0];
-        $this->fname = $line[1];
-        $this->fsize = $line[2];
-        $this->dislikes = (int) $line[3];
-        $this->likes = (int) $line[4];
-        $this->ratio = (int) $line[5];
-        $this->gender = (int) $line[6];
-        $this->downloads = (int) $line[7];
-        $this->comments = (int) $line[8];
-        $this->user_id = (int) $line[9];
-        $this->comment_last = ( $line[10] === '0000-00-00 00:00:00' ) ? false : $line[10];
+        
+        if (!$this->id) return;
+        
+        $line = getDB()->fetchRow("SELECT * FROM `{$this->db}` WHERE `id`='" . $this->id . "'");
+        if (!$line) return;     
+ 
+        $this->name = $line['name'];
+        $this->fname = $line['fname'];
+        $this->fsize = $line['fsize'];
+        $this->dislikes = (int) $line['dislikes'];
+        $this->likes = (int) $line['likes'];
+        $this->ratio = (int) $line['ratio']; // @todo rename to scale
+        $this->gender = (int) $line['gender'];
+        $this->downloads = (int) $line['downloads'];
+        $this->comments = (int) $line['comments'];
+        $this->user_id = (int) $line['user_id'];
+        $this->comment_last = ( $line['comment_last'] === '0000-00-00 00:00:00' ) ? false : $line['comment_last'];
     }
 
     public function OnComment()
@@ -78,7 +70,7 @@ Class SPItem extends Item
         $this->comment_last = date("Y-m-d H:i:s");
         $this->comments++;
 
-        BD("UPDATE `{$this->db}` SET `comments` = '" . $this->comments . "', `comment_last` = '" . $this->comment_last . "' WHERE `id`='" . $this->id . "'");
+        getDB()->ask("UPDATE `{$this->db}` SET `comments` = '" . $this->comments . "', `comment_last` = '" . $this->comment_last . "' WHERE `id`='" . $this->id . "'");
     }
 
     public function OnDeleteComment()
@@ -88,15 +80,15 @@ Class SPItem extends Item
             return false;
         $this->comments--;
 
-        BD("UPDATE `{$this->db}` SET `comments` = '" . $this->comments . "' WHERE `id`='" . $this->id . "'");
+        getDB()->ask("UPDATE `{$this->db}` SET `comments` = '" . $this->comments . "' WHERE `id`='" . $this->id . "'");
     }
 
-    public function Create($post_name, $gender = 2, $max_size = 20, $max_ratio = 1, $del_blist = false, $method = 'post')
+    public function Create($post_name, $gender = 2, $max_size = 20, $max_scale = 1, $del_blist = false, $method = 'post')
     {
         global $user;
 
         $max_size = (int) $max_size;
-        $max_ratio = (int) $max_ratio;
+        $max_scale = (int) $max_scale;
         $gender = (int) $gender;
 
         if ($gender > 2 or $gender < 0)
@@ -129,16 +121,15 @@ Class SPItem extends Item
         $hash = md5_file($way);
 
         if ($del_blist)
-            BD("DELETE FROM {$this->db_bad_skins} WHERE hash='" . $hash . "'");
+            getDB()->ask("DELETE FROM `{$this->db_bad_skins}` WHERE hash='$hash'");
 
-        $result = BD("SELECT `id`, 'good_skin' AS `type` FROM `{$this->db}` WHERE hash='" . $hash . "' UNION SELECT `id`, 'bad_skin' AS `type` FROM {$this->db_bad_skins} WHERE `hash`='" . $hash . "'");
-
-        if (mysql_num_rows($result)) {
-
-            $line = mysql_fetch_array($result);
+        $line = getDB()->fetchRow("SELECT `id`, 'good_skin' AS `type` FROM `{$this->db}` "
+                                . "WHERE hash='$hash' UNION SELECT `id`, 'bad_skin' "
+                                . "AS `type` FROM `{$this->db_bad_skins}` WHERE `hash`='$hash'");
+                                
+        if ($line) {
 
             unlink($way);
-
             if ($line['type'] == 'bad_skin')
                 return 3;
             else
@@ -150,21 +141,24 @@ Class SPItem extends Item
             unlink($way);
             return 4;
         }
-
-        $new_file_ratio = skinGenerator2D::isValidSkin($way);
-        if (!$new_file_ratio or $new_file_ratio > $max_ratio) {
+        
+        $new_file_scale = SkinViewer2D::isValidSkin($way);
+        
+        if (!$new_file_scale or $new_file_scale['scale'] > $max_scale) {
 
             unlink($way);
             return 5;
         }
 
-        BD("INSERT INTO `{$this->db}` (hash, fsize, ratio, gender, user_id) VALUES ('" . $hash . "','" . $size_mb . "','" . $new_file_ratio . "', '" . $gender . "', '" . $user_id . "')");
+        $new_file_scale = (int) $new_file_scale['scale'];
+        
+        getDB()->ask("INSERT INTO `{$this->db}` (hash, fsize, ratio, gender, user_id) VALUES ('" . $hash . "','" . $size_mb . "','" . $new_file_scale . "', '" . $gender . "', '" . $user_id . "')");
 
-        $this->id = mysql_insert_id();
+        $this->id = getDB()->lastInsertId();
         $new_name = 'sp_nc' . $this->id . '.png';
         $new_way = $this->base_dir . $new_name;
 
-        BD("UPDATE `{$this->db}` SET `fname` = '" . $new_name . "' WHERE `id`='" . $this->id . "'");
+        getDB()->ask("UPDATE `{$this->db}` SET `fname` = '" . $new_name . "' WHERE `id`='" . $this->id . "'");
 
         if (file_exists($new_way))
             unlink($new_way);
@@ -173,28 +167,29 @@ Class SPItem extends Item
             chmod($new_way, 0777);
         else {
             unlink($way);
-            BD("DELETE FROM `{$this->db}` WHERE `id`='" . $this->id . "'");
+            getDB()->ask("DELETE FROM `{$this->db}` WHERE `id`='" . $this->id . "'");
             return 6;
         }
 
-        $preview = skinGenerator2D::savePreview($this->base_dir . 'preview/' . $new_name, $new_way, false, false, 160);
+        $preview = SkinViewer2D::savePreview($this->base_dir . 'preview/' . $new_name, $new_way, false, false, 160);
         if (!$preview) {
             unlink($new_way);
-            BD("DELETE FROM `{$this->db}` WHERE `id`='" . $this->id . "'");
+            getDB()->ask("DELETE FROM `{$this->db}` WHERE `id`='" . $this->id . "'");
             return 7;
         } else
             imagedestroy($preview);
 
-        BD("LOCK TABLES `{$this->db_ratio}` WRITE;");
-        BD("INSERT INTO `{$this->db_ratio}` (ratio) VALUES ('" . ((int) $new_file_ratio) . "') ON DUPLICATE KEY UPDATE `num`= num + 1;");
-        BD("UNLOCK TABLES;");
+        getDB()->ask("LOCK TABLES `{$this->db_ratio}` WRITE;");
+        getDB()->ask("INSERT INTO `{$this->db_ratio}` (ratio) VALUES ('$new_file_scale') "
+                   . "ON DUPLICATE KEY UPDATE `num`= num + 1;");
+        getDB()->ask("UNLOCK TABLES;");
 
         $this->name = '';
         $this->fname = $new_name;
         $this->fsize = $size_mb;
         $this->dislikes = 0;
         $this->likes = 0;
-        $this->ratio = $new_file_ratio;
+        $this->ratio = $new_file_scale;
         $this->gender = $gender;
         $this->downloads = 0;
         $this->user_id = $user_id;
@@ -210,7 +205,7 @@ Class SPItem extends Item
         if (!file_exists($skin_way)) {
 
             $this->Delete();
-            vtxtlog('[Rebuild][skinGenerator2D] SPItem ID ' . $this->id . ' not founded - delete');
+            vtxtlog('[Rebuild][SkinViewer2D] SPItem ID ' . $this->id . ' not founded - delete');
 
             return false;
         }
@@ -218,34 +213,34 @@ Class SPItem extends Item
         if (file_exists($preview_way))
             unlink($preview_way);
 
-        $skin_ratio = skinGenerator2D::isValidSkin($skin_way);
-        if (!$skin_ratio) {
-
+        $skin_scale = SkinViewer2D::isValidSkin($skin_way);
+        if (!$skin_scale) {
             $this->Delete();
-            vtxtlog('[Rebuild][skinGenerator2D] SPItem ID ' . $this->id . ' wrong skin format - delete');
+            vtxtlog('[Rebuild][SkinViewer2D] SPItem ID ' . $this->id . ' wrong skin format - delete');
 
             return false;
         }
 
-        if (!skinGenerator2D::savePreview($preview_way, $skin_way, false, false, 160)) {
+        if (!SkinViewer2D::savePreview($preview_way, $skin_way, false, false, 160)) {
 
             $this->Delete();
-            vtxtlog('[Rebuild][skinGenerator2D] Fail to create preview for SPItem ID ' . $this->id);
+            vtxtlog('[Rebuild][SkinViewer2D] Fail to create preview for SPItem ID ' . $this->id);
 
             return false;
         }
 
         if (!file_exists($preview_way))
-            vtxtlog('[Rebuild][skinGenerator2D] Fail to save preview for SPItem ID ' . $this->id);
+            vtxtlog('[Rebuild][SkinViewer2D] Fail to save preview for SPItem ID ' . $this->id);
+        
+        $skin_scale = (int) $skin_scale['scale'];
+        
+        getDB()->ask("LOCK TABLES `{$this->db_ratio}` WRITE;");
+        getDB()->ask("INSERT INTO `{$this->db_ratio}` (ratio) VALUES ('" . $skin_scale . "') ON DUPLICATE KEY UPDATE `num`= num + 1;");
+        getDB()->ask("UNLOCK TABLES;");
 
-        BD("LOCK TABLES `{$this->db_ratio}` WRITE;");
-        BD("INSERT INTO `{$this->db_ratio}` (ratio) VALUES ('" . ((int) $skin_ratio) . "') ON DUPLICATE KEY UPDATE `num`= num + 1;");
-        BD("UNLOCK TABLES;");
-
-        if ($this->ratio != $skin_ratio) {
-
-            BD("UPDATE `{$this->db}` SET `ratio` = '" . $skin_ratio . "' WHERE `id`='" . $this->id . "'");
-            $this->ratio = $skin_ratio;
+        if ($this->ratio != $skin_scale) {
+            getDB()->ask("UPDATE `{$this->db}` SET `ratio` = '" . $skin_scale . "' WHERE `id`='" . $this->id . "'");
+            $this->ratio = $skin_scale;
         }
     }
 
@@ -280,8 +275,7 @@ Class SPItem extends Item
         else
             $work_user->defaultSkinTrigger(false);
 
-        BD("UPDATE `{$this->db}` SET `downloads` = downloads + 1 WHERE `id`='" . $this->id . "'");
-
+        getDB()->ask("UPDATE `{$this->db}` SET `downloads` = downloads + 1 WHERE `id`='" . $this->id . "'");
         return true;
     }
 
@@ -320,7 +314,7 @@ Class SPItem extends Item
         header('Content-Disposition: attachment; filename="' . $this->fname . '"');
         header('Content-Transfer-Encoding:binary');
 
-        BD("UPDATE `{$this->db}` SET `downloads` = downloads + 1 WHERE `id`='" . $this->id . "'");
+        getDB()->ask("UPDATE `{$this->db}` SET `downloads` = downloads + 1 WHERE `id`='" . $this->id . "'");
 
         readfile($this->base_dir . $this->fname);
         return true;
@@ -386,7 +380,7 @@ Class SPItem extends Item
         $skin_ratio = (64 * $skin_info['ratio']) . 'x' . (32 * $skin_info['ratio']);
         $skin_gender = $skin_info['gender'];
         $skin_downloads = $skin_info['downloads'];
-        $skin_preview = $this->base_url . 'preview/' . $this->base_name . $skin_id . '.png';
+        $skin_preview = $this->base_url . 'preview/' . self::BASE_NAME . $skin_id . '.png';
 
         ob_start();
         include $this->GetView('skin.html');
@@ -409,7 +403,7 @@ Class SPItem extends Item
         if ($new_gender < 0 or $new_gender > 2)
             $new_gender = 0;
 
-        BD("UPDATE `{$this->db}` SET `gender` = '$new_gender' WHERE `id`='" . $this->id . "'");
+        getDB()->ask("UPDATE `{$this->db}` SET `gender` = '$new_gender' WHERE `id`='" . $this->id . "'");
 
         $this->gender = $new_gender;
     }
@@ -424,12 +418,10 @@ Class SPItem extends Item
         $skin_way = $this->base_dir . $this->fname;
         $preview_way = $this->base_dir . 'preview/' . $this->fname;
 
-        $result = BD("SELECT `hash` FROM `{$this->db}` WHERE `id`='" . $this->id . "'");
+        $line = getDB()->fetchRow("SELECT `hash` FROM `{$this->db}` WHERE `id`='" . $this->id . "'");
 
-        if (mysql_num_rows($result)) {
-
-            $line = mysql_fetch_array($result);
-            BD("INSERT INTO {$this->db_bad_skins} (hash) VALUES ('" . $line['hash'] . "')");
+        if ($line) {
+            getDB()->ask("INSERT INTO {$this->db_bad_skins} (hash) VALUES ('" . $line['hash'] . "')");
         }
 
         if (file_exists($skin_way))
@@ -437,11 +429,10 @@ Class SPItem extends Item
         if (file_exists($preview_way))
             unlink($preview_way);
 
-        BD("DELETE FROM `{$this->db_likes}` WHERE `item_id`='" . $this->id . "' AND `item_type`='" . ItemType::Skin . "'");
-
-        BD("LOCK TABLES `{$this->db_ratio}` WRITE;");
-        BD("UPDATE `{$this->db_ratio}` SET `num` = num - 1 WHERE `ratio`='" . $this->ratio . "'");
-        BD("UNLOCK TABLES;");
+        getDB()->ask("DELETE FROM `{$this->db_likes}` WHERE `item_id`='" . $this->id . "' AND `item_type`='" . ItemType::Skin . "'");
+        getDB()->ask("LOCK TABLES `{$this->db_ratio}` WRITE;");
+        getDB()->ask("UPDATE `{$this->db_ratio}` SET `num` = num - 1 WHERE `ratio`='" . $this->ratio . "'");
+        getDB()->ask("UNLOCK TABLES;");
 
         return parent::Delete();
     }
@@ -489,9 +480,13 @@ Class SkinManager extends View
         Group::$permissions = array_merge(Group::$permissions, self::$permissions);
     }
 
-    public function FindNewSkins()
+    public function FindNewSkins($tag)
     {
-        $skin_dir_way = MCR_ROOT . 'instruments/sp2/upload/';
+        global $site_ways;
+        
+        if ($tag < 0 or $tag > 2) $tag = 2;
+        
+        $skin_dir_way = MCR_ROOT . $site_ways['sp_dir'] . 'upload/';
 
         if (!is_dir($skin_dir_way)) {
             $this->answer .= 'Папка загрузки новых скинов не существует  <br />';
@@ -499,7 +494,6 @@ Class SkinManager extends View
         }
 
         $skin_dir = opendir($skin_dir_way);
-
         @ini_set("max_execution_time", 0);
 
         $skin_black = 0;
@@ -530,7 +524,7 @@ Class SkinManager extends View
                 continue;
 
             $new_skin = new SPItem();
-            $result = $new_skin->Create($skin_dir_way . $filename, 2, 5000, 24, false, 'file');
+            $result = $new_skin->Create($skin_dir_way . $filename, $tag, 5000, 24, false, 'file');
 
             if ($result == 3)
                 $skin_black++;
@@ -543,24 +537,22 @@ Class SkinManager extends View
                 $skin_error++;
             }
         }
+        
         closedir($skin_dir);
-
         $this->answer .= 'Добавление файлов завершено. <br /> Добавлены: ' . $skin_add . ' <br /> Проигнорированы: <br />  Черный список: ' . $skin_black . ' Дубликаты: ' . $skin_exist . ' Ошибки: ' . $skin_error;
     }
 
     public function RebuildAll()
     {
-        BD("LOCK TABLES `{$this->db_ratio}` WRITE;");
-        BD("DELETE FROM `{$this->db_ratio}` WHERE `ratio` != '0'");
-        BD("UNLOCK TABLES;");
+        getDB()->ask("LOCK TABLES `{$this->db_ratio}` WRITE;");
+        getDB()->ask("DELETE FROM `{$this->db_ratio}` WHERE `ratio` != '0'");
+        getDB()->ask("UNLOCK TABLES;");
 
         @ini_set("max_execution_time", 0);
 
-        $result = BD("SELECT `id` FROM `" . $this->db . "`");
-
-        if (mysql_num_rows($result))
-            while ($line = mysql_fetch_array($result, MYSQL_NUM)) {
-
+        $result = getDB()->ask("SELECT `id` FROM `" . $this->db . "`");
+        
+            while ($line = $result->fetch('num')) {
                 $skin = new SPItem($line[0]);
                 $skin->Rebuild();
             }
@@ -570,7 +562,7 @@ Class SkinManager extends View
     
     public function TryAutoConfigure()
     {
-        global $config, $bd_names, $menu;
+        global $config, $bd_names, $site_ways, $menu;
 
         if (!isset($menu))
             $menu = new Menu();
@@ -624,45 +616,45 @@ Class SkinManager extends View
         global $bd_names, $config;
 
         $info = $this->answer;
-
+        $configUpd = false;
+        
         if (isset($_POST['sp_group_edit'])) {
 
-            $group = new Group(InputGet('group', 'POST', 'int'));
+            $group = new Group(Filter::input('group', 'post', 'int'));
             $permissions = $group->GetAllPermissions();
 
             foreach (self::$permissions as $key => $value) {
                 if ($value == 'bool')
-                    $permissions[$key] = (InputGet($key, 'POST', 'int')) ? 1 : 0;
+                    $permissions[$key] = (Filter::input($key, 'post', 'int')) ? 1 : 0;
                 elseif (isset($_POST[$key]))
-                    $permissions[$key] = InputGet($key, 'POST', 'int');
+                    $permissions[$key] = Filter::input($key, 'post', 'int');
                 else
                     continue;
             }
 
             $group->Edit($group->GetName(), $permissions);
-        }
+            
+        } elseif (isset($_POST['sp_config_set'])) {
 
-        if (isset($_POST['sp_config_set'])) {
+            // @todo move rebuild action some where else
+            
+            $rebuild_items = Filter::input('rebuild_items', 'post', 'bool');
+            
+            if ($rebuild_items)
+                $this->RebuildAll();
 
-            $bd_skins = InputGet('bd_skins', 'POST', 'str');
-            $bd_bad_skins = InputGet('bd_bad_skins', 'POST', 'str');
-            $bd_skins_ratio = InputGet('bd_skins_ratio', 'POST', 'str');
+            $config['sp_online'] = !Filter::input('sp_offline', 'post', 'bool');
+            $config['sp_upload'] = Filter::input('sp_upload', 'post', 'bool');
+            $config['sp_download'] = Filter::input('sp_download', 'post', 'bool');
+            $config['sp_comments'] = Filter::input('sp_comments', 'post', 'bool');
+            $configUpd = true;
+            
+        } elseif (isset($_POST['sp_tables_set'])) { 
 
-            $rebuild_items = InputGet('rebuild_items', 'POST', 'bool');
-            $find_items = InputGet('find_items', 'POST', 'bool');
-
-            $sp_offline = InputGet('sp_offline', 'POST', 'bool');
-            $sp_upload = InputGet('sp_upload', 'POST', 'bool');
-
-            $sp_download = InputGet('sp_download', 'POST', 'bool');
-            $sp_comments = InputGet('sp_comments', 'POST', 'bool');
-
-            $config['sp_online'] = ($sp_offline) ? false : true;
-            $config['sp_upload'] = $sp_upload;
-
-            $config['sp_download'] = $sp_download;
-            $config['sp_comments'] = $sp_comments;
-
+            $bd_skins = Filter::input('bd_skins', 'post');
+            $bd_bad_skins = Filter::input('bd_bad_skins', 'post');
+            $bd_skins_ratio = Filter::input('bd_skins_ratio', 'post');  
+       
             if ($bd_skins)
                 if (!getDB()->isColumnExist($bd_skins, 'fname'))
                     $this->answer .= 'Таблица не найдена ( ' . $bd_skins . ' )  <br />';
@@ -681,22 +673,27 @@ Class SkinManager extends View
                 else
                     $bd_names['sp_skins_ratio'] = $bd_skins_ratio;
 
-            if ($bd_skins or $bd_bad_skins or $bd_skins_ratio)
-                $this->answer .= 'Настройки изменены <br />';
-
-            loadTool('alist.class.php');
-            if (!MainConfig::SaveOptions())
-                $this->answer .= 'Ошибка применения настроек <br />';
-
+            if ($bd_skins or $bd_bad_skins or $bd_skins_ratio)            
+             $configUpd = true;
+            
+        } elseif (isset($_POST['sp_upload_set'])) {
+            
+            $find_items = Filter::input('find_items', 'post', 'bool');
+            $tag = Filter::input('rebuild_type', 'post', 'int'); 
+            
             if ($find_items)
-                $this->FindNewSkins();
-
-            if ($rebuild_items)
-                $this->RebuildAll();
-
-            $info = $this->answer;
+                $this->FindNewSkins($tag);            
         }
 
+        if ($configUpd) {
+            loadTool('alist.class.php');
+            
+            if (!MainConfig::SaveOptions())
+               $this->answer .= 'Ошибка применения настроек <br />';
+            else
+                $this->answer .= 'Настройки изменены <br />';
+        }
+        $info = $this->answer;
         $result = getDB()->ask("SELECT `id`, `name` FROM `{$bd_names['groups']}` ORDER BY `name` DESC LIMIT 0,90");
 
         ob_start();
@@ -763,14 +760,14 @@ Class SkinManager extends View
         if (!empty($user) and $user->group() == 3)
             $admin = true;
 
-        $result = BD("SELECT `ratio`,`num` FROM `" . $this->db_ratio . "` ORDER BY `ratio` LIMIT 0, 90");
+        $result = getDB()->ask("SELECT `ratio`,`num` FROM `" . $this->db_ratio . "` ORDER BY `ratio` LIMIT 0, 90");
 
-        while ($line = mysql_fetch_array($result, MYSQL_NUM))
-            $ratio_list .= '<option value="' . $line[0] . '" ' . (($line[0] == $ratio) ? 'selected' : '') . '>' . (64 * $line[0]) . 'x' . (32 * $line[0]) . ' (' . $line[1] . ')</option>';
+        while ($line = $result->fetch('num')) {
+            $ratio_list .= '<option value="' . $line[0] . '" ' . (($line[0] == $ratio) ? 'selected' : '')
+                    . '>' . (64 * $line[0]) . 'x' . (32 * $line[0]) . ' (' . $line[1] . ')</option>';
+        }
 
-        ob_start();
-        include $this->GetView('ratio.html');
-
+        ob_start(); include $this->GetView('ratio.html');
         return ob_get_clean();
     }
 
@@ -786,9 +783,7 @@ Class SkinManager extends View
 
         $max_fsize = $user->getPermission('max_fsize');
 
-        ob_start();
-        include $this->GetView('add_skin_form.html');
-
+        ob_start(); include $this->GetView('add_skin_form.html');
         return ob_get_clean();
     }
 
@@ -818,30 +813,24 @@ Class SkinManager extends View
 
                 $comments = new CommentList($skin, $this->base_url . '&cid=' . $id, 'news/comments/');
                 $html_skin_list .= $comments->Show($list);
-
                 $html_skin_list .= $comments->ShowAddForm();
             }
         }
 
-        ob_start();
-        include $this->GetView('main.html');
-
+        ob_start(); include $this->GetView('main.html');
         return ob_get_clean();
     }
 
     public function ShowRandom()
     {
-        $skins_count = mysql_result(mysql_query("SELECT COUNT(*) FROM {$this->db}"), 0);
-        if (!$skins_count)
-            return $this->ShowById(0); //
-
-        $result = BD("SELECT `id` FROM {$this->db} LIMIT " . rand(0, $skins_count - 1) . ", 1");
-
-        if (!mysql_num_rows($result))
-            return false;
-
-        $line = mysql_fetch_array($result, MYSQL_NUM);
-
+        $skins_count = getDB()->fetchRow("SELECT COUNT(*) FROM {$this->db}", false, 'num');
+        if (!$skins_count) {
+            return $this->ShowById(0);            
+        } else $skins_count = (int) $skins_count[0];
+        
+        $line = getDB()->fetchRow("SELECT `id` FROM {$this->db} LIMIT " . rand(0, $skins_count - 1) . ", 1", false, 'num');
+        if (!$line) return false;
+        
         return $this->ShowById((int) $line[0]);
     }
 
@@ -910,17 +899,21 @@ Class SkinManager extends View
             else
                 $base_sql .= " AND `ratio` = '" . $ratio . "'";
 
-            $skins_count = mysql_result(BD("SELECT COUNT(*) FROM `" . $this->db . "` " . $base_sql), 0);
+            $skins_count = getDB()->fetchRow("SELECT COUNT(*) FROM `" . $this->db . "` " . $base_sql, false, 'num');
         } else {
 
             if (empty($user))
                 $skins_count = 0;
             else
-                $skins_count = mysql_result(BD("SELECT COUNT(*) FROM `" . $this->db_likes . "` WHERE `user_id`= '" . $user->id() . "' AND `item_type` = '" . $this->type . "' AND `var`='1'"), 0);
+                $skins_count = getDB()->fetchRow("SELECT COUNT(*) FROM `" . $this->db_likes . "` WHERE "
+                                          . "`user_id`= '" . $user->id() . "' AND `item_type` = '" . $this->type . "' "
+                                          . "AND `var`='1'", false, 'num');
         }
 
+        if (!$skins_count) $skins_count = 0;
+        else $skins_count = (int) $skins_count[0];
+        
         $html_skin_list = '';
-
         if ($list > ceil($skins_count / $per_page))
             $list = 1;
 
@@ -929,32 +922,31 @@ Class SkinManager extends View
         else {
 
             if ($mode != 'likes') {
-
-                $result = BD("SELECT `id` FROM `" . $this->db . "` " . $base_sql . " ORDER BY `$order_by` $sort LIMIT " . ($per_page * ($list - 1)) . ",$per_page");
+                $result = getDB()->ask("SELECT `id` FROM `" . $this->db . "` " . $base_sql . " "
+                                     . "ORDER BY `$order_by` $sort LIMIT " . ($per_page * ($list - 1)) . ", $per_page");
             } else {
+                $sql = "SELECT `item_id` AS 'id' FROM `{$this->db}` "
+                      . "LEFT JOIN `{$this->db_likes}` ON "
+                      . $this->db . ".id = {$this->db_likes}.item_id "
+                      . "WHERE {$this->db_likes}.user_id = '" . $user->id() . "' AND "
+                      . "{$this->db_likes}.item_type = '{$this->type}' AND "
+                      . "{$this->db_likes}.var = '1' ORDER BY {$this->db_likes}.id "
+                      . "DESC LIMIT " . ($per_page * ($list - 1)) . ", $per_page";
 
-                $sql = "SELECT `item_id` AS 'id' ";
-                $sql .= "FROM `" . $this->db . "` LEFT JOIN `" . $this->db_likes . "` ON " . $this->db . ".id = " . $this->db_likes . ".item_id ";
-                $sql .= "WHERE " . $this->db_likes . ".user_id = '" . $user->id() . "' AND " . $this->db_likes . ".item_type = '" . $this->type . "' AND " . $this->db_likes . ".var = '1' ORDER BY " . $this->db_likes . ".id DESC LIMIT " . ($per_page * ($list - 1)) . ",$per_page";
-
-                $result = BD($sql);
+                $result = getDB()->ask($sql);
             }
-
-            if (!mysql_num_rows($result))
-                $html_skin_list = $this->ShowPage('skin_empty.html');
-
-            while ($line = mysql_fetch_array($result, MYSQL_NUM)) {
-
+            
+            while ($line = $result->fetch('num')) {
                 $skin = new SPItem($line[0], $this->st_subdir);
                 $html_skin_list .= $skin->Show($this->discus);
             }
+            
+            if (!$html_skin_list) $this->ShowPage('skin_empty.html');
         }
 
         $html_skin_list .= $this->arrowsGenerator($this->base_url . $this->url_params . '&', $list, $skins_count, $per_page);
 
-        ob_start();
-        include $this->GetView('main.html');
-
+        ob_start(); include $this->GetView('main.html');
         return ob_get_clean();
     }
 }

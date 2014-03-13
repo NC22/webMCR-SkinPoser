@@ -20,7 +20,7 @@ $ratio = (isset($_GET['ratio'])) ? (int) $_GET['ratio'] : 1;
 $skin_id = (isset($_GET['cid'])) ? (int) $_GET['cid'] : false;
 $gender_base = (!empty($user) and $user->isFemale()) ? 1 : 0;
 
-if (!empty($_GET['type']))
+if (isset($_GET['type']))
     $gender = (int) $_GET['type'];
 else
     $gender = $gender_base;
