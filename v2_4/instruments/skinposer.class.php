@@ -39,7 +39,7 @@ Class SPItem extends Item
         parent::__construct($id, ItemType::Skin, $bd_names['sp_skins'], $style_sd);
 
         $this->base_dir = MCR_ROOT . $site_ways['sp_dir'] . 'skins/';
-        $this->base_url = $site_ways['sp_skins'];
+        $this->base_url = $site_ways['sp_dir'] . 'skins/';
         $this->db_likes = $bd_names['likes'];
         $this->db_bad_skins = $bd_names['sp_bad_skins'];
         $this->db_ratio = $bd_names['sp_skins_ratio'];
