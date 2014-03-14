@@ -31,13 +31,13 @@ Class SPItem extends Item
     private $gender;
     private $downloads;
     private $user_id;
-
+    
     public function __construct($id = false, $style_sd = false)
     {
         global $bd_names, $site_ways;
 
-        parent::__construct($id, ItemType::Skin, $bd_names['sp_skins'], $style_sd);
-
+        parent::__construct($id, ItemType::Skin, $bd_names['sp_skins'], $style_sd); 
+        
         $this->base_dir = MCR_ROOT . $site_ways['sp_dir'] . 'skins/';
         $this->base_url = $site_ways['sp_dir'] . 'skins/';
         $this->db_likes = $bd_names['likes'];
@@ -455,12 +455,19 @@ Class SkinManager extends View
     private $download;
     private $answer;
 
+    /**
+     * @deprecated since v2.4b 
+     */
+    private $st_subdir = null;
+    
     public function SkinManager($style_sd = false, $base_url = 'index.php?mode=skinposer', $url_params = false)
     {
         global $bd_names, $config;
 
         parent::View($style_sd);
-
+        
+        if (!$this->st_subdir) $this->st_subdir = $style_sd;
+        
         if (isset($bd_names['sp_skins'])) {
 
             $this->db = $bd_names['sp_skins'];
